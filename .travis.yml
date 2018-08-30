@@ -1,0 +1,100 @@
+sudo: false
+
+android:
+  components:
+    - tools
+    - platform-tools
+    - build-tools-26.0.2
+    - android-23
+    - android-25
+    - extra-android-m2repository
+
+before_cache:
+    - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock 
+
+cache:
+    directories:
+        - .nvm
+        - $HOME/.gradle/caches/
+        - $HOME/.gradle/wrapper/
+
+install:
+    - echo no | npm install -g nativescript
+    - tns usage-reporting disable
+    - tns error-reporting disable
+    - echo no | npm install -g grunt-cli
+    - npm install
+    - grunt compile
+
+matrix:
+  include:
+    - stage: lint
+      language: node_js
+      os: linux
+      node_js: "8"
+      script: grunt lint
+
+    - stage: build
+      language: android
+      os: linux
+      env: 
+        - Android="26"
+      jdk: oraclejdk8
+      before_install: nvm install 8.11.3
+      script: "grunt ci:build:android"
+
+    - stage: build
+      os: osx
+      env: 
+        - iOS="10.3"
+        - Xcode="9.4"
+      osx_image: xcode9.4
+      language: node_js 
+      node_js: "8"
+      jdk: oraclejdk8
+      before_install:
+        - pip install --upgrade pip
+        - pip install --user --upgrade matplotlib
+        - pip install six
+      script: "grunt ci:build:ios"
+
+    - stage: webpack
+      language: android
+      os: linux
+      env:
+        - Android="26"
+        - Platform="Android"
+      jdk: oraclejdk8
+      before_install: nvm install 8.11.3
+      script: "grunt ci:webpack:android"
+    
+    - stage: webpack
+      os: osx
+      env: 
+        - iOS="10.3"
+        - Xcode="9.4"
+        - Platform="iOS"
+      osx_image: xcode9.4
+      language: node_js 
+      node_js: "8"
+      jdk: oraclejdk8
+      before_install:
+        - pip install --upgrade pip
+        - pip install --user --upgrade matplotlib
+        - pip install six
+      script: "grunt ci:webpack:ios"
+
+    - stage: deploy
+      if: branch = release
+      language: node_js 
+      node_js: "8"
+      before_deploy:
+          - cd bin/dist
+      deploy:
+        provider: npm
+        email: "peter@tangrasoft.com"
+        api_key:
+          secure: "aDwolMad3E8pPs9tI7Wm0zaa2N43KJpCFE+bRknlvBB0YgXxoDAtbts0zModtzaNagJD4lLkLB4mxlC1LASFX533lE7cZ4+vP79tjhvrSnsg6J4obdyPlCDCiLZjarXcOyNyL9yHKNrSQ1XTA1JUJspbTBWG31sTKsx950Bqh2HJW2Zr8ET/Yz/xi/P2LJC1tSXPMN9XzC53COOR5Wr2VIuZxT30tq0p1IC6q+RemwKtwEMx/TojeCDp9kfcPdQBrclRw3Aqs2zmvrs/zrZymIDqR9rMzAYqQMixKwCoURo29B37OUXMzgcgcSWenogUJPqzPRAGvK5IsCAHPqe3A7wrnL5YQfEiapRzFThTLAh4BB5ewOq0OD1YRlrhlqRSNN3Bx99+RGM+uJgtxo4C58WvABxSyuY8uw+Mwl6N/eNUnyWwFt7ulxC/c8yO8OMOB5F8GjcNPcXDa3NC3TrOnRyaQy/3zy+KsYr6SrRBvaqaG6ZuS/D/k/tY1h1RWV02m6ShigzEAi8KIgwC/deIsZwwUc9zqyVqSgwN3uQmnq9W3kdxzMl82VS75E6yAZvz9ezRKzUq/TQWfKHDXpsHAC8K46v5435kHTaOn/8rX/HqzaO4FS5Y+TmRvm/JDP4m6peis5KXHzHv+DgGrF0DNWstUreA2/CbPg0xkgJTYTQ="
+        skip_cleanup: true
+        on:
+          branch: release

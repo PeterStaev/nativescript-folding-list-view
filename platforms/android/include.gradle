@@ -1,0 +1,3 @@
+dependencies {
+    compile "com.ramotion.foldingcell:folding-cell:1.2.2"
+}
