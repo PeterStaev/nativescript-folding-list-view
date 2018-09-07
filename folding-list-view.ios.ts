@@ -116,7 +116,7 @@ export class FoldingListView extends FoldingListViewBase {
             if (!(view.foreground.bindingContext instanceof Observable)) {
                 view.foreground.bindingContext = null;
             }
-            
+
             if (!(view.container.bindingContext instanceof Observable)) {
                 view.foreground.bindingContext = null;
             }
@@ -239,6 +239,10 @@ export class FoldingListView extends FoldingListViewBase {
 
             foregroundView = this._checkAndWrapProxyContainers(foregroundView);
             containerView = this._checkAndWrapProxyContainers(containerView);
+
+            // NOTE: In the native source the top constraints of both views are unified
+            // so we are doing the same here to keep the {N} and native properties in sync!
+            containerView.marginTop = foregroundView.marginTop;
 
             // If cell is reused it have old content - remove it first.
             // Foreground
@@ -386,27 +390,29 @@ export class FoldingListView extends FoldingListViewBase {
 
     private _layoutCell(cellView: FoldingCellView): FoldingCellHeight {
         if (cellView) {
+            const foregroundView = cellView.foreground;
             const measureForegroundSize = View.measureChild(
                 this,
                 cellView.foreground,
-                this.widthMeasureSpec - (cellView.foreground._constraintLeft + cellView.foreground._constraintRight),
+                this.widthMeasureSpec - (foregroundView._constraintLeft + foregroundView._constraintRight),
                 layout.makeMeasureSpec(this._effectiveFoldedRowHeight, layout.EXACTLY),
             );
+            const containerView = cellView.container;
             const measuredContainerSize = View.measureChild(
                 this,
                 cellView.container,
-                this.widthMeasureSpec,
+                this.widthMeasureSpec - (containerView._constraintLeft + containerView._constraintRight),
                 infinity,
             );
             const height: FoldingCellHeight = {
                 // This is needed since we use this height to return the rowheight to the table view. 
                 // Bottom constraints are not applied. 
                 foreground: measureForegroundSize.measuredHeight + cellView.foreground._constraintTop,
-                container: measuredContainerSize.measuredHeight,
+                container: measuredContainerSize.measuredHeight + cellView.container._constraintTop,
             };
-            
+
             this.setHeight(cellView.index, height);
-            
+
             return height;
         }
 
@@ -453,7 +459,7 @@ class FoldingListViewCell extends FoldingCell {
         }
 
         this._initForegroundView(cellHeight.foreground);
-        this._initContainerView(layout.toDeviceIndependentPixels(cellHeight.container));
+        this._initContainerView(cellHeight.container);
 
         this.commonInit();
     }
@@ -485,12 +491,13 @@ class FoldingListViewCell extends FoldingCell {
             { layer: foregroundView } as any,
         );
         NSLayoutConstraint.activateConstraints(top);
-        
+
         this.foregroundView = foregroundView;
         this.foregroundViewTop = top.objectAtIndex(0);
     }
 
     private _initContainerView(height: number) {
+        const topConstraintValue = layout.toDeviceIndependentPixels(this.containerViewTNS._constraintTop);
         const containerView = UIView.alloc().initWithFrame(CGRectZero);
         containerView.translatesAutoresizingMaskIntoConstraints = false;
         containerView.addSubview(this.containerViewTNS.nativeViewProtected);
@@ -498,19 +505,19 @@ class FoldingListViewCell extends FoldingCell {
         this.contentView.addSubview(containerView);
 
         NSLayoutConstraint.activateConstraints(NSLayoutConstraint.constraintsWithVisualFormatOptionsMetricsViews(
-            `V:[layer(==${height})]`,
+            `V:[layer(==${layout.toDeviceIndependentPixels(height) - topConstraintValue})]`,
             0,
             null,
             { layer: containerView } as any,
         ));
         NSLayoutConstraint.activateConstraints(NSLayoutConstraint.constraintsWithVisualFormatOptionsMetricsViews(
-            "H:|[layer]|",
+            `H:|-${layout.toDeviceIndependentPixels(this.containerViewTNS._constraintLeft)}-[layer]-${layout.toDeviceIndependentPixels(this.containerViewTNS._constraintRight)}-|`,
             0,
             null,
             { layer: containerView } as any,
         ));
         const top = NSLayoutConstraint.constraintsWithVisualFormatOptionsMetricsViews(
-            "V:|[layer]",
+            `V:|-${topConstraintValue}-[layer]`,
             0,
             null,
             { layer: containerView } as any,
@@ -533,7 +540,7 @@ class FoldingListViewDelegate extends NSObject implements UITableViewDelegate {
     }
 
     private _owner: WeakRef<FoldingListView>;
-    
+
     public tableViewHeightForRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): number {
         const owner = this._owner.get();
         const cellHeight = owner.getHeight(indexPath.row);
@@ -565,7 +572,7 @@ class FoldingListViewDelegate extends NSObject implements UITableViewDelegate {
                 duration = duration + cell.durationsForExpandedState.objectAtIndex(loop);
             }
         }
-        
+
         UIView.animateWithDurationDelayOptionsAnimationsCompletion(
             duration,
             0,
@@ -609,7 +616,7 @@ class FoldingListViewDataSource extends NSObject implements UITableViewDataSourc
         if (owner) {
             const template = owner._getForegroundItemTemplate(indexPath.row);
             cell = (tableView.dequeueReusableCellWithIdentifier(template.key) || FoldingListViewCell.new()) as FoldingListViewCell;
-            
+
             const cellHeight = owner._prepareCell(cell, indexPath);
             const width = layout.getMeasureSpecSize(owner.widthMeasureSpec);
 
@@ -620,11 +627,11 @@ class FoldingListViewDataSource extends NSObject implements UITableViewDataSourc
                 View.layoutChild(owner, foregroundView, 0, 0, width - (foregroundView._constraintLeft + foregroundView._constraintRight), cellHeight.foreground - foregroundView._constraintTop);
             }
 
-            const containerView: View = cell.containerViewTNS;
+            const containerView = cell.containerViewTNS;
             if (containerView && (containerView as any).isLayoutRequired) {
                 // Arrange cell views. We do it here instead of _layoutCell because _layoutCell is called 
                 // from 'tableViewHeightForRowAtIndexPath' method too (in iOS 7.1) and we don't want to arrange the fake cell.
-                View.layoutChild(owner, containerView, 0, 0, width, cellHeight.container);
+                View.layoutChild(owner, containerView, 0, 0, width - (containerView._constraintLeft + containerView._constraintRight), cellHeight.container - containerView._constraintTop);
             }
 
             cell.itemCount = owner.foldsCount;

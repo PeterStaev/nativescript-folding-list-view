@@ -8,7 +8,7 @@
     </Page.actionBar>
 
     <GridLayout>
-        <flv:FoldingListView id="lv" items="{{ items }}" foldsCount="4" foldedRowHeight="95" style="padding: 10">
+        <flv:FoldingListView id="lv" items="{{ items }}" foldsCount="4" foldedRowHeight="75" style="padding: 10">
             <flv:FoldingListView.foregroundItemTemplate>
                 <GridLayout rows="auto, *, auto" style="background-color: red; margin: 5 10; padding: 0; border-width: 1;">
                     <Label row="0" text="{{ 'Folded ' + item }}" />
@@ -16,8 +16,9 @@
                 </GridLayout>
             </flv:FoldingListView.foregroundItemTemplate>
             <flv:FoldingListView.containerItemTemplate>
-                <GridLayout style="background-color: blue; margin-bottom: 10; padding: 10; height: 200">
-                    <Label text="{{ 'Expanded ' + item }}" />
+                <GridLayout rows="auto, *, auto" style="background-color: blue; margin: 10; padding: 10; height: 200">
+                    <Label row="0" text="{{ 'Expanded ' + item }}" />
+                    <Label row="2" text="{{ 'Expanded ' + item }}" style="text-align:right" />
                 </GridLayout>
             </flv:FoldingListView.containerItemTemplate>
         </flv:FoldingListView>
