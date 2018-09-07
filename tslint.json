@@ -10,6 +10,11 @@
     "prefer-for-of": true,
     "no-string-literal": false,
     "no-trailing-whitespace": false,
+    "no-namespace": false,
+    "no-internal-module": false,
+    "no-submodule-imports": false,
+    "no-implicit-dependencies": false,
+    "no-object-literal-type-assertion": false,
     "trailing-comma": [
       true,
       {

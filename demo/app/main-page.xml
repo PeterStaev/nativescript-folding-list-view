@@ -1,0 +1,33 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" 
+      xmlns:flv="nativescript-folding-list-view"
+      navigatingTo="navigatingTo" class="page">
+
+    <Page.actionBar>
+        <ActionBar title="My App" icon="" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+
+    <GridLayout>
+        <flv:FoldingListView id="lv" items="{{ items }}" foldsCount="4" foldedRowHeight="95" style="padding: 10">
+            <flv:FoldingListView.foregroundItemTemplate>
+                <GridLayout rows="auto, *, auto" style="background-color: red; margin: 5 10; padding: 0; border-width: 1;">
+                    <Label row="0" text="{{ 'Folded ' + item }}" />
+                    <Label row="2" text="{{ 'Folded ' + item }}" style="text-align:right" />
+                </GridLayout>
+            </flv:FoldingListView.foregroundItemTemplate>
+            <flv:FoldingListView.containerItemTemplate>
+                <GridLayout style="background-color: blue; margin-bottom: 10; padding: 10; height: 200">
+                    <Label text="{{ 'Expanded ' + item }}" />
+                </GridLayout>
+            </flv:FoldingListView.containerItemTemplate>
+        </flv:FoldingListView>
+
+        <!-- <ListView id="lv" items="{{ items }}">
+            <ListView.itemTemplate>
+                <StackLayout>
+                    <Label text="{{ item }}"/>
+                </StackLayout>
+            </ListView.itemTemplate>
+        </ListView> -->
+    </GridLayout>
+</Page>
