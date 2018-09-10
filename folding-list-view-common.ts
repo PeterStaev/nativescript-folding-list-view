@@ -14,7 +14,7 @@ import { Observable } from "data/observable";
 import { ChangedData, ObservableArray } from "data/observable-array";
 import { parse } from "ui/builder";
 import { CoercibleProperty, Property } from "ui/core/properties";
-import { CSSType, KeyedTemplate, Length, Template, View } from "ui/core/view";
+import { CSSType, Color, CssProperty, KeyedTemplate, Length, Style, Template, View } from "ui/core/view";
 import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
 import { Label } from "ui/label";
 import { ItemsSource } from "ui/list-view";
@@ -41,12 +41,19 @@ export abstract class FoldingListViewBase extends View implements FoldingListVie
     public static loadMoreItemsEvent = "loadMoreItems";
     // TODO: get rid of such hacks.
     public static knownFunctions = ["itemTemplateSelector"]; // See component-builder.ts isKnownFunction
-    
+
     public items: any[] | ItemsSource;
     public foldsCount: number;
 
+    public get backViewColor(): Color {
+        return (this.style as any).backViewColor;
+    }
+    public set backViewColor(value: Color) {
+        (this.style as any).backViewColor = value;
+    }
+
     public _effectiveFoldedRowHeight: number = Length.toDevicePixels(defaultFoldedRowHeight, autoEffectiveRowHeight);
-    
+
     public foregroundItemTemplate: string | Template;
     public _defaultForegroundItemTemplate: KeyedTemplate = {
         key: Constants.DefaultTemplateKey,
@@ -140,7 +147,7 @@ export abstract class FoldingListViewBase extends View implements FoldingListVie
     public _onFoldedRowHeightPropertyChanged(oldValue: Length, newValue: Length) {
         this.refresh();
     }
-    
+
     public _onItemsChanged(args: ChangedData<any>) {
         this.refresh();
     }
@@ -212,3 +219,11 @@ export const foldedRowHeightProperty = new CoercibleProperty<FoldingListViewBase
     valueConverter: Length.parse
 });
 foldedRowHeightProperty.register(FoldingListViewBase);
+
+export const backViewColorProperty = new CssProperty<Style, Color>({
+    name: "backViewColor",
+    cssName: "back-view-color",
+    equalityComparer: Color.equals,
+    valueConverter: (v) => new Color(v),
+});
+backViewColorProperty.register(Style);

@@ -11,12 +11,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ***************************************************************************** */
 import { Observable } from "data/observable";
-import { Length, PercentLength, View, layout } from "ui/core/view";
+import { Color, Length, PercentLength, View, layout } from "ui/core/view";
 import { StackLayout } from "ui/layouts/stack-layout";
 import { ProxyViewContainer } from "ui/proxy-view-container";
 import * as utils from "utils/utils";
 
-import { FoldingListViewBase } from "./folding-list-view-common";
+import { FoldingListViewBase, backViewColorProperty } from "./folding-list-view-common";
 
 export * from "./folding-list-view-common";
 
@@ -214,6 +214,8 @@ export class FoldingListView extends FoldingListViewBase {
 
     public _prepareCell(cell: FoldingListViewCell, indexPath: NSIndexPath): FoldingCellHeight {
         let cellHeight: FoldingCellHeight;
+        let isForegroundViewToBeConstrainedIn: boolean = false;
+        let isContainerViewToBeConstrainedIn: boolean = false;
         try {
             this._preparingCell = true;
 
@@ -240,34 +242,30 @@ export class FoldingListView extends FoldingListViewBase {
             foregroundView = this._checkAndWrapProxyContainers(foregroundView);
             containerView = this._checkAndWrapProxyContainers(containerView);
 
-            // NOTE: In the native source the top constraints of both views are unified
-            // so we are doing the same here to keep the {N} and native properties in sync!
-            containerView.marginTop = foregroundView.marginTop;
-
             // If cell is reused it have old content - remove it first.
             // Foreground
             if (!cell.foregroundViewTNS) {
                 cell.foregroundViewWeakRef = new WeakRef(foregroundView);
-                this._prepareConstrainedView(foregroundView);
+                isForegroundViewToBeConstrainedIn = true;
             }
             else if (cell.foregroundViewTNS !== foregroundView) {
+                isForegroundViewToBeConstrainedIn = true;
                 this._removeContainer(cell);
                 cell.foregroundViewTNS.nativeViewProtected.removeFromSuperview();
                 cell.foregroundViewWeakRef = new WeakRef(foregroundView);
-                this._prepareConstrainedView(foregroundView);
             }
             this._prepareItem(foregroundView, indexPath.row);
 
             // Container
             if (!cell.containerViewTNS) {
+                isContainerViewToBeConstrainedIn = true;
                 cell.containerViewWeakRef = new WeakRef(containerView);
-                this._prepareConstrainedView(containerView);
             }
             else if (cell.containerViewTNS !== containerView) {
+                isContainerViewToBeConstrainedIn = true;
                 this._removeContainer(cell);
                 cell.containerViewTNS.nativeViewProtected.removeFromSuperview();
                 cell.containerViewWeakRef = new WeakRef(containerView);
-                this._prepareConstrainedView(containerView);
             }
             this._prepareItem(containerView, indexPath.row);
 
@@ -284,6 +282,17 @@ export class FoldingListView extends FoldingListViewBase {
             }
             if (containerView && !containerView.parent) {
                 this._addView(containerView);
+            }
+
+            // NOTE: In the native source the top constraints of both views are unified
+            // so we are doing the same here to keep the {N} and native properties in sync!
+            containerView.marginTop = foregroundView.marginTop;
+
+            if (isForegroundViewToBeConstrainedIn) {
+                this._prepareConstrainedView(foregroundView);
+            }
+            if (isContainerViewToBeConstrainedIn) {
+                this._prepareConstrainedView(containerView);
             }
 
             cellHeight = this._layoutCell(cellView);
@@ -323,12 +332,13 @@ export class FoldingListView extends FoldingListViewBase {
         this._map.delete(cell);
     }
 
-    // [separatorColorProperty.getDefault](): UIColor {
-    //     return this._ios.separatorColor;
-    // }
-    // [separatorColorProperty.setNative](value: Color | UIColor) {
-    //     this._ios.separatorColor = value instanceof Color ? value.ios : value;
-    // }
+    public [backViewColorProperty.getDefault](): UIColor {
+        return (FoldingListViewCell.alloc().init()).backViewColor;
+    }
+    public [backViewColorProperty.setNative](value: Color | UIColor) {
+        const actualColor: UIColor = value instanceof Color ? value.ios : value;
+        this._map.forEach((view, cell) => { cell.backViewColor = actualColor; });
+    }
 
     // [itemTemplatesProperty.getDefault](): KeyedTemplate[] {
     //     return null;
@@ -343,15 +353,6 @@ export class FoldingListView extends FoldingListViewBase {
     //     }
 
     //     this.refresh();
-    // }
-
-    // [iosEstimatedRowHeightProperty.getDefault](): Length {
-    //     return DEFAULT_HEIGHT;
-    // }
-    // [iosEstimatedRowHeightProperty.setNative](value: Length) {
-    //     const nativeView = this._ios;
-    //     const estimatedHeight = Length.toDevicePixels(value, 0);
-    //     nativeView.estimatedRowHeight = estimatedHeight < 0 ? DEFAULT_HEIGHT : estimatedHeight;
     // }
 
     private _scrollToIndex(index: number, animated: boolean = true) {
@@ -454,12 +455,15 @@ class FoldingListViewCell extends FoldingCell {
     }
 
     public resetNativeViews(cellHeight: FoldingCellHeight) {
+        const parent = (this.foregroundViewTNS ? this.foregroundViewTNS.parent as FoldingListView : null);
+
         for (let loop = this.contentView.subviews.count - 1; loop >= 0; loop--) {
             this.contentView.subviews.objectAtIndex(loop).removeFromSuperview();
         }
 
         this._initForegroundView(cellHeight.foreground);
         this._initContainerView(cellHeight.container);
+        this.backViewColor = parent.backViewColor.ios;
 
         this.commonInit();
     }

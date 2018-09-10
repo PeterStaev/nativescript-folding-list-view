@@ -1,0 +1,32 @@
+#lv {
+    back-view-color: #cccccc;
+}
+
+.folded-cell,
+.expanded-cell {
+    margin: 10; 
+    border-radius: 5; 
+    border-color: #444444; 
+    border-width: 1;
+    background-color: #eeeeee;
+}
+
+.folded-cell .item-nbr,
+.expanded-cell .item-nbr {
+    background-color: #949494; 
+    color: #fefefe; 
+    text-align: center;
+}
+
+.expanded-cell {
+    height: 250;
+}
+
+.expanded-cell .item-nbr {
+    font-weight: bold;
+    padding: 5;
+}
+
+.expanded-cell .label {
+    padding: 15;
+}

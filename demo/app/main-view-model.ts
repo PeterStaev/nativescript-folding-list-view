@@ -9,7 +9,7 @@ export class HelloWorldModel extends Observable {
 
         this._items = [];
         for (let loop = 0; loop < 100; loop++) {
-            this._items.push({ item: `Item ${loop}` });
+            this._items.push({ item: `${loop}` });
         }
     }
 
