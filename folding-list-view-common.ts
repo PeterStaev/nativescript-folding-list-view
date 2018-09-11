@@ -14,19 +14,22 @@ import { Observable } from "data/observable";
 import { ChangedData, ObservableArray } from "data/observable-array";
 import { parse } from "ui/builder";
 import { CoercibleProperty, Property } from "ui/core/properties";
-import { CSSType, Color, CssProperty, KeyedTemplate, Length, Style, Template, View } from "ui/core/view";
+import { CSSType, Color, CssProperty, EventData, KeyedTemplate, Length, Style, Template, View } from "ui/core/view";
 import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
 import { Label } from "ui/label";
 import { ItemsSource } from "ui/list-view";
 
-import { FoldingListView as FoldingListViewDefinition } from ".";
+import {
+    DetailDataLoaderFunc,
+    FoldingListView as FoldingListViewDefinition,
+    ItemEventData,
+    TemplateSelectorFunc,
+} from ".";
 
 export module knownTemplates {
     export const foregroundItemTemplate = "foregroundItemTemplate";
     export const containerItemTemplate = "containerItemTemplate";
 }
-
-declare type TemplateSelectorFunc = (item: any, index: number, items: any) => string;
 
 const enum Constants {
     DefaultTemplateKey = "default",
@@ -40,10 +43,13 @@ export abstract class FoldingListViewBase extends View implements FoldingListVie
     public static itemLoadingEvent = "itemLoading";
     public static loadMoreItemsEvent = "loadMoreItems";
     // TODO: get rid of such hacks.
-    public static knownFunctions = ["itemTemplateSelector"]; // See component-builder.ts isKnownFunction
+    public static knownFunctions = ["itemTemplateSelector", "detailDataLoader"]; // See component-builder.ts isKnownFunction
 
     public items: any[] | ItemsSource;
     public foldsCount: number;
+    public foldedRowHeight: Length;
+
+    public detailDataLoader: DetailDataLoaderFunc;
 
     public get backViewColor(): Color {
         return (this.style as any).backViewColor;
@@ -80,6 +86,7 @@ export abstract class FoldingListViewBase extends View implements FoldingListVie
 
     private _itemTemplateSelector: TemplateSelectorFunc;
     private _itemTemplateSelectorBindable = new Label();
+    private _cachedDetailData = new Array<any>();
 
     public get itemTemplateSelector(): string | TemplateSelectorFunc {
         return this._itemTemplateSelector;
@@ -103,6 +110,8 @@ export abstract class FoldingListViewBase extends View implements FoldingListVie
     }
 
     public abstract refresh();
+    public abstract scrollToIndex(index: number);
+    public abstract scrollToIndexAnimated(index: number);
 
     public _getForegroundItemTemplate(index: number): KeyedTemplate {
         let templateKey: string = Constants.DefaultTemplateKey;
@@ -138,6 +147,14 @@ export abstract class FoldingListViewBase extends View implements FoldingListVie
         return this._containerTemplatesInternal[0];
     }
 
+    public _getDetailDataLoaderPromise(index: number): Promise<any> {
+        if (this.detailDataLoader) {
+            return this.detailDataLoader(this._getDataItem(index), index);
+        }
+
+        return null;
+    }
+
     public _prepareItem(item: View, index: number) {
         if (item) {
             item.bindingContext = this._getDataItem(index);
@@ -152,10 +169,24 @@ export abstract class FoldingListViewBase extends View implements FoldingListVie
         this.refresh();
     }
 
+    public _getCachedDetailData(index: number): any {
+        return this._cachedDetailData[index];
+    }
+    public _setCachedDetailData(index: number, value: any) {
+        this._cachedDetailData[index] = value;
+    }
+
     private _getDataItem(index: number): any {
         const thisItems = this.items as ItemsSource;
         return thisItems.getItem ? thisItems.getItem(index) : thisItems[index];
     }
+}
+
+// Dummy augment of the base class to satisfy TS. 
+export interface FoldingListViewBase {
+    on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+    on(event: "itemLoading", callback: (args: ItemEventData) => void, thisArg?: any);
+    on(event: "loadMoreItems", callback: (args: EventData) => void, thisArg?: any);
 }
 
 export const itemsProperty = new Property<FoldingListViewBase, any[] | ItemsSource>({

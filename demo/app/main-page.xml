@@ -8,7 +8,8 @@
     </Page.actionBar>
 
     <GridLayout>
-        <flv:FoldingListView id="lv" items="{{ items }}" foldsCount="4" foldedRowHeight="95">
+        <flv:FoldingListView id="lv" items="{{ items }}" foldsCount="5" foldedRowHeight="95" 
+            loadMoreItems="loadMoreItems" itemLoading="itemLoading" detailDataLoader="detailDataLoader">
             <flv:FoldingListView.foregroundItemTemplate>
                 <!-- <GridLayout rows="auto, *, auto" style="background-color: red; margin: 5 10; padding: 0; border-width: 1;">
                     <Label row="0" text="{{ 'Folded ' + item }}" />
@@ -18,6 +19,7 @@
                     <GridLayout row="0" col="0" rows="*, auto, auto, *" class="item-nbr" orientation="vertical">
                         <Label row="1" text="Item"/>
                         <Label row="2" text="{{ '#' + item }}"/>
+                        <ActivityIndicator row="3" busy="{{ isBusyIn }}" />
                     </GridLayout>
                     <StackLayout col="1" padding="10">
                         <Label class="h2" text="My Header"/>
@@ -30,11 +32,11 @@
                     <Label row="0" text="{{ 'Expanded ' + item }}" />
                     <Label row="2" text="{{ 'Expanded ' + item }}" style="text-align:right" />
                 </GridLayout> -->
-                <GridLayout rows="auto, *, auto" class="expanded-cell">
+                <StackLayout rows="auto, *, auto" class="expanded-cell">
                     <Label row="0" class="item-nbr" text="{{ 'Item #' + item }}" />
-                    <Label row="1" class="label" textWrap="true" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum." />
+                    <Label row="1" class="label" textWrap="true" text="{{ details }}" />
                     <Button row="2" class="btn btn-primary" text="Click Me!" />
-                </GridLayout>
+                </StackLayout>
             </flv:FoldingListView.containerItemTemplate>
         </flv:FoldingListView>
 

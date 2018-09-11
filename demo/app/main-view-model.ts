@@ -1,4 +1,4 @@
-import { Observable } from "data/observable";
+import { Observable, fromObject } from "data/observable";
 
 export class HelloWorldModel extends Observable {
 
@@ -9,7 +9,7 @@ export class HelloWorldModel extends Observable {
 
         this._items = [];
         for (let loop = 0; loop < 100; loop++) {
-            this._items.push({ item: `${loop}` });
+            this._items.push(fromObject({ item: `${loop}`, details: "", isBusyIn: false }));
         }
     }
 

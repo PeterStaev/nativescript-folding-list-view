@@ -11,11 +11,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ***************************************************************************** */
 import { Observable } from "data/observable";
-import { Color, Length, PercentLength, View, layout } from "ui/core/view";
+import { Color, EventData, Length, PercentLength, View, layout } from "ui/core/view";
 import { StackLayout } from "ui/layouts/stack-layout";
 import { ProxyViewContainer } from "ui/proxy-view-container";
 import * as utils from "utils/utils";
 
+import { ItemEventData } from ".";
 import { FoldingListViewBase, backViewColorProperty } from "./folding-list-view-common";
 
 export * from "./folding-list-view-common";
@@ -145,7 +146,7 @@ export class FoldingListView extends FoldingListViewBase {
         this._heights[index] = value;
     }
 
-    public getIsCellExpanded(index: number): boolean {
+    public getIsCellExpandedIn(index: number): boolean {
         return this._cellExpanded[index];
     }
 
@@ -202,12 +203,11 @@ export class FoldingListView extends FoldingListViewBase {
         super.onLayout(left, top, right, bottom);
 
         this._map.forEach((cellView, listViewCell) => {
-            // let rowHeight = this._effectiveRowHeight;
+            const width = layout.getMeasureSpecSize(this.widthMeasureSpec);
             const cellHeight = this.getHeight(cellView.index);
             if (cellHeight) {
-                const width = layout.getMeasureSpecSize(this.widthMeasureSpec);
-                View.layoutChild(this, cellView.foreground, 0, 0, width, cellHeight.foreground);
-                View.layoutChild(this, cellView.container, 0, 0, width, cellHeight.container);
+                this._layoutConstraintedView(cellView.foreground, width, cellHeight.foreground);
+                this._layoutConstraintedView(cellView.container, width, cellHeight.container);
             }
         });
     }
@@ -216,28 +216,32 @@ export class FoldingListView extends FoldingListViewBase {
         let cellHeight: FoldingCellHeight;
         let isForegroundViewToBeConstrainedIn: boolean = false;
         let isContainerViewToBeConstrainedIn: boolean = false;
+        const index = indexPath.row;
+
         try {
             this._preparingCell = true;
 
             let foregroundView = cell.foregroundViewTNS;
             if (!foregroundView) {
-                foregroundView = this._getForegroundItemTemplate(indexPath.row).createView();
+                foregroundView = this._getForegroundItemTemplate(index).createView();
             }
 
             let containerView = cell.containerViewTNS;
             if (!containerView) {
-                containerView = this._getContainerItemTemplate(indexPath.row).createView();
+                containerView = this._getContainerItemTemplate(index).createView();
             }
 
-            // TODO
-            // this.notify({
-            //     eventName: FoldingListView.itemLoadingEvent,
-            //     object: this,
-            //     index: indexPath.row,
-            //     view,
-            //     ios: cell,
-            //     android: undefined,
-            // });
+            this.notify({
+                eventName: FoldingListView.itemLoadingEvent,
+                object: this,
+                index,
+                view: {
+                    foreground: foregroundView,
+                    container: containerView,
+                },
+                ios: cell,
+                android: undefined,
+            } as ItemEventData);
 
             foregroundView = this._checkAndWrapProxyContainers(foregroundView);
             containerView = this._checkAndWrapProxyContainers(containerView);
@@ -254,7 +258,7 @@ export class FoldingListView extends FoldingListViewBase {
                 cell.foregroundViewTNS.nativeViewProtected.removeFromSuperview();
                 cell.foregroundViewWeakRef = new WeakRef(foregroundView);
             }
-            this._prepareItem(foregroundView, indexPath.row);
+            this._prepareItem(foregroundView, index);
 
             // Container
             if (!cell.containerViewTNS) {
@@ -267,12 +271,19 @@ export class FoldingListView extends FoldingListViewBase {
                 cell.containerViewTNS.nativeViewProtected.removeFromSuperview();
                 cell.containerViewWeakRef = new WeakRef(containerView);
             }
-            this._prepareItem(containerView, indexPath.row);
+            if (!this.detailDataLoader) {
+                this._prepareItem(containerView, index);
+            }
+
+            const cachedData = this._getCachedDetailData(index);
+            if (cachedData) {
+                cell._bindContainerView(index, cachedData);
+            }
 
             const cellView: FoldingCellView = {
                 foreground: foregroundView,
                 container: containerView,
-                index: indexPath.row,
+                index,
             };
             this._map.set(cell, cellView);
 
@@ -340,6 +351,26 @@ export class FoldingListView extends FoldingListViewBase {
         this._map.forEach((view, cell) => { cell.backViewColor = actualColor; });
     }
 
+    public _measureConstraintedChild(view: ConstraintedView, measuredHeight: number) {
+        return View.measureChild(
+            this,
+            view,
+            this.widthMeasureSpec - (view._constraintLeft + view._constraintRight),
+            measuredHeight,
+        );
+    }
+
+    public _layoutConstraintedView(view: ConstraintedView, width: number, height: number) {
+        View.layoutChild(
+            this,
+            view,
+            0,
+            0,
+            width - (view._constraintLeft + view._constraintRight),
+            height - view._constraintTop
+        );
+    }
+
     // [itemTemplatesProperty.getDefault](): KeyedTemplate[] {
     //     return null;
     // }
@@ -391,20 +422,8 @@ export class FoldingListView extends FoldingListViewBase {
 
     private _layoutCell(cellView: FoldingCellView): FoldingCellHeight {
         if (cellView) {
-            const foregroundView = cellView.foreground;
-            const measureForegroundSize = View.measureChild(
-                this,
-                cellView.foreground,
-                this.widthMeasureSpec - (foregroundView._constraintLeft + foregroundView._constraintRight),
-                layout.makeMeasureSpec(this._effectiveFoldedRowHeight, layout.EXACTLY),
-            );
-            const containerView = cellView.container;
-            const measuredContainerSize = View.measureChild(
-                this,
-                cellView.container,
-                this.widthMeasureSpec - (containerView._constraintLeft + containerView._constraintRight),
-                infinity,
-            );
+            const measureForegroundSize = this._measureConstraintedChild(cellView.foreground, layout.makeMeasureSpec(this._effectiveFoldedRowHeight, layout.EXACTLY));
+            const measuredContainerSize = this._measureConstraintedChild(cellView.container, infinity);
             const height: FoldingCellHeight = {
                 // This is needed since we use this height to return the rowheight to the table view. 
                 // Bottom constraints are not applied. 
@@ -444,6 +463,8 @@ class FoldingListViewCell extends FoldingCell {
         return this.containerViewWeakRef ? this.containerViewWeakRef.get() : null;
     }
 
+    private _containerViewHeightConstraints: NSArray<NSLayoutConstraint>;
+
     public willMoveToSuperview(newSuperview: UIView): void {
         const parent = (this.foregroundViewTNS ? this.foregroundViewTNS.parent as FoldingListView : null);
 
@@ -463,9 +484,46 @@ class FoldingListViewCell extends FoldingCell {
 
         this._initForegroundView(cellHeight.foreground);
         this._initContainerView(cellHeight.container);
+
         this.backViewColor = parent.backViewColor.ios;
 
         this.commonInit();
+    }
+
+    public resetContainerViewHeightContraint(newHeight: number) {
+        const topConstraintValue = layout.toDeviceIndependentPixels(this.containerViewTNS._constraintTop);
+
+        if (this._containerViewHeightConstraints) {
+            NSLayoutConstraint.deactivateConstraints(this._containerViewHeightConstraints);
+        }
+
+        this._containerViewHeightConstraints = NSLayoutConstraint.constraintsWithVisualFormatOptionsMetricsViews(
+            `V:[layer(==${layout.toDeviceIndependentPixels(newHeight) - topConstraintValue})]`,
+            0,
+            null,
+            { layer: this.containerView } as any,
+        );
+        NSLayoutConstraint.activateConstraints(this._containerViewHeightConstraints);
+    }
+
+    public _bindContainerView(index: number, dataItem: any) {
+        const containerView = this.containerViewTNS;
+        const parent = containerView.parent as FoldingListView;
+        const width = layout.getMeasureSpecSize(parent.widthMeasureSpec);
+
+        containerView.bindingContext = dataItem;
+
+        const size = parent._measureConstraintedChild(containerView, infinity);
+        const cellHeight = parent.getHeight(index);
+
+        cellHeight.container = size.measuredHeight + containerView._constraintTop;
+        parent.setHeight(index, cellHeight);
+
+        if (containerView && (containerView as any).isLayoutRequired) {
+            parent._layoutConstraintedView(containerView, width, cellHeight.container);
+        }
+
+        this.resetContainerViewHeightContraint(cellHeight.container);
     }
 
     private _initForegroundView(height: number) {
@@ -503,17 +561,14 @@ class FoldingListViewCell extends FoldingCell {
     private _initContainerView(height: number) {
         const topConstraintValue = layout.toDeviceIndependentPixels(this.containerViewTNS._constraintTop);
         const containerView = UIView.alloc().initWithFrame(CGRectZero);
+
         containerView.translatesAutoresizingMaskIntoConstraints = false;
         containerView.addSubview(this.containerViewTNS.nativeViewProtected);
-
         this.contentView.addSubview(containerView);
 
-        NSLayoutConstraint.activateConstraints(NSLayoutConstraint.constraintsWithVisualFormatOptionsMetricsViews(
-            `V:[layer(==${layout.toDeviceIndependentPixels(height) - topConstraintValue})]`,
-            0,
-            null,
-            { layer: containerView } as any,
-        ));
+        this.containerView = containerView;
+
+        this.resetContainerViewHeightContraint(height);
         NSLayoutConstraint.activateConstraints(NSLayoutConstraint.constraintsWithVisualFormatOptionsMetricsViews(
             `H:|-${layout.toDeviceIndependentPixels(this.containerViewTNS._constraintLeft)}-[layer]-${layout.toDeviceIndependentPixels(this.containerViewTNS._constraintRight)}-|`,
             0,
@@ -527,11 +582,9 @@ class FoldingListViewCell extends FoldingCell {
             { layer: containerView } as any,
         );
         NSLayoutConstraint.activateConstraints(top);
+        this.containerViewTop = top.objectAtIndex(0);
 
         containerView.layoutIfNeeded();
-
-        this.containerView = containerView;
-        this.containerViewTop = top.objectAtIndex(0);
     }
 }
 
@@ -549,7 +602,7 @@ class FoldingListViewDelegate extends NSObject implements UITableViewDelegate {
         const owner = this._owner.get();
         const cellHeight = owner.getHeight(indexPath.row);
 
-        return layout.toDeviceIndependentPixels(owner.getIsCellExpanded(indexPath.row) ? cellHeight.container : cellHeight.foreground);
+        return layout.toDeviceIndependentPixels(owner.getIsCellExpandedIn(indexPath.row) ? cellHeight.container : cellHeight.foreground);
     }
 
     public tableViewDidSelectRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): void {
@@ -559,9 +612,50 @@ class FoldingListViewDelegate extends NSObject implements UITableViewDelegate {
         if (cell.isAnimating()) {
             return;
         }
-        const isExpanded = !owner.getIsCellExpanded(indexPath.row);
 
-        owner.setIsCellExpanded(indexPath.row, isExpanded);
+        const isExpandedIn = !owner.getIsCellExpandedIn(indexPath.row);
+        const index = indexPath.row;
+
+        if (isExpandedIn && owner.detailDataLoader) {
+            owner._getDetailDataLoaderPromise(index)
+                .then((value) => {
+                    cell._bindContainerView(index, value);
+                    owner._setCachedDetailData(index, value);
+
+                    // HACK: this is needed as seems the value of bounds.size is not immediately updated
+                    setTimeout(() => { this._performCellUnfold(cell, index, isExpandedIn); }, 1);
+                })
+                .catch((e) => { console.error("ERROR LOADING DETAILS:", e); });
+        }
+        else {
+            this._performCellUnfold(cell, index, isExpandedIn);
+        }
+
+        // If cell is collapsed clear the cached data so it can be loaded again on expand. 
+        if (!isExpandedIn) {
+            owner._setCachedDetailData(index, undefined);
+        }
+    }
+
+    public tableViewWillDisplayCellForRowAtIndexPath(tableView: UITableView, cell: UITableViewCell, indexPath: NSIndexPath) {
+        const foldingCell = cell as FoldingListViewCell;
+        const owner = this._owner.get();
+        const isExpandedIn = owner.getIsCellExpandedIn(indexPath.row);
+
+        if (owner && (indexPath.row === owner.items.length - 1)) {
+            owner.notify({
+                eventName: FoldingListViewBase.loadMoreItemsEvent,
+                object: owner,
+            } as EventData);
+        }
+
+        foldingCell.unfoldAnimatedCompletion(isExpandedIn, false, null);
+    }
+
+    private _performCellUnfold(cell: FoldingListViewCell, index: number, isExpanded: boolean) {
+        const owner = this._owner.get();
+
+        owner.setIsCellExpanded(index, isExpanded);
         cell.unfoldAnimatedCompletion(isExpanded, true, null);
 
         let duration: number = 0;
@@ -582,20 +676,12 @@ class FoldingListViewDelegate extends NSObject implements UITableViewDelegate {
             0,
             UIViewAnimationOptions.CurveEaseOut,
             () => {
-                tableView.beginUpdates();
-                tableView.endUpdates();
+                owner.ios.beginUpdates();
+                owner.ios.endUpdates();
             },
             null,
         );
     }
-
-    public tableViewWillDisplayCellForRowAtIndexPath(tableView: UITableView, cell: UITableViewCell, indexPath: NSIndexPath) {
-        const foldingCell = cell as FoldingListViewCell;
-        const owner = this._owner.get();
-
-        foldingCell.unfoldAnimatedCompletion(owner.getIsCellExpanded(indexPath.row), false, null);
-    }
-
 }
 
 @ObjCClass(UITableViewDataSource)
@@ -628,14 +714,14 @@ class FoldingListViewDataSource extends NSObject implements UITableViewDataSourc
             if (foregroundView && (foregroundView as any).isLayoutRequired) {
                 // Arrange cell views. We do it here instead of _layoutCell because _layoutCell is called 
                 // from 'tableViewHeightForRowAtIndexPath' method too (in iOS 7.1) and we don't want to arrange the fake cell.
-                View.layoutChild(owner, foregroundView, 0, 0, width - (foregroundView._constraintLeft + foregroundView._constraintRight), cellHeight.foreground - foregroundView._constraintTop);
+                owner._layoutConstraintedView(foregroundView, width, cellHeight.foreground);
             }
 
             const containerView = cell.containerViewTNS;
             if (containerView && (containerView as any).isLayoutRequired) {
                 // Arrange cell views. We do it here instead of _layoutCell because _layoutCell is called 
                 // from 'tableViewHeightForRowAtIndexPath' method too (in iOS 7.1) and we don't want to arrange the fake cell.
-                View.layoutChild(owner, containerView, 0, 0, width - (containerView._constraintLeft + containerView._constraintRight), cellHeight.container - containerView._constraintTop);
+                owner._layoutConstraintedView(containerView, width, cellHeight.container);
             }
 
             cell.itemCount = owner.foldsCount;
