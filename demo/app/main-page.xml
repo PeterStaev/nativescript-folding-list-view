@@ -11,10 +11,6 @@
         <flv:FoldingListView id="lv" items="{{ items }}" foldsCount="5" foldedRowHeight="95" 
             loadMoreItems="loadMoreItems" itemLoading="itemLoading" detailDataLoader="detailDataLoader">
             <flv:FoldingListView.foregroundItemTemplate>
-                <!-- <GridLayout rows="auto, *, auto" style="background-color: red; margin: 5 10; padding: 0; border-width: 1;">
-                    <Label row="0" text="{{ 'Folded ' + item }}" />
-                    <Label row="2" text="{{ 'Folded ' + item }}" style="text-align:right" />
-                </GridLayout> -->
                 <GridLayout columns="75, *" class="folded-cell">
                     <GridLayout row="0" col="0" rows="*, auto, auto, *" class="item-nbr" orientation="vertical">
                         <Label row="1" text="Item"/>
@@ -28,27 +24,13 @@
                 </GridLayout>
             </flv:FoldingListView.foregroundItemTemplate>
             <flv:FoldingListView.containerItemTemplate>
-                <!-- <GridLayout rows="auto, *, auto" style="background-color: blue; margin: 10; padding: 10; height: 200">
-                    <Label row="0" text="{{ 'Expanded ' + item }}" />
-                    <Label row="2" text="{{ 'Expanded ' + item }}" style="text-align:right" />
-                </GridLayout> -->
                 <StackLayout rows="auto, *, auto" class="expanded-cell">
                     <Label row="0" class="item-nbr" text="{{ 'Item #' + item }}" />
                     <Label row="1" class="label" textWrap="true" text="{{ details }}" />
-                    <Button row="2" class="btn btn-primary" text="Click Me!" />
+                    <!-- <Label row="1" class="label" textWrap="true" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum." /> -->
+                    <Button id="btn" row="2" class="btn btn-primary" text="Click Me!" tap="buttonTap" />
                 </StackLayout>
             </flv:FoldingListView.containerItemTemplate>
         </flv:FoldingListView>
-
-        <!-- <ListView id="lv" items="{{ items }}">
-            <ListView.itemTemplate>
-                <GridLayout columns="75, *" class="folded-cell">
-                    <GridLayout row="0" col="0" rows="*, auto, auto, *" class="item-nbr" orientation="vertical">
-                        <Label row="1" text="Item"/>
-                        <Label row="2" text="{{ '#' + item }}"/>
-                    </GridLayout>
-                </GridLayout>
-            </ListView.itemTemplate>
-        </ListView> -->
     </GridLayout>
 </Page>

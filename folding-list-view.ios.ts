@@ -12,8 +12,6 @@ limitations under the License.
 ***************************************************************************** */
 import { Observable } from "data/observable";
 import { Color, EventData, Length, PercentLength, View, layout } from "ui/core/view";
-import { StackLayout } from "ui/layouts/stack-layout";
-import { ProxyViewContainer } from "ui/proxy-view-container";
 import * as utils from "utils/utils";
 
 import { ItemEventData } from ".";
@@ -51,7 +49,6 @@ export class FoldingListView extends FoldingListViewBase {
     private _dataSource;
     private _delegate;
     private _heights: FoldingCellHeight[];
-    private _cellExpanded: boolean[];
     private _preparingCell: boolean;
     private _isDataDirty: boolean;
     private _map: Map<FoldingListViewCell, FoldingCellView>;
@@ -65,7 +62,6 @@ export class FoldingListView extends FoldingListViewBase {
         this._ios.dataSource = this._dataSource = FoldingListViewDataSource.initWithOwner(new WeakRef(this));
         this._delegate = FoldingListViewDelegate.initWithOwner(new WeakRef(this));
         this._heights = new Array<FoldingCellHeight>();
-        this._cellExpanded = new Array<boolean>();
         this._map = new Map<FoldingListViewCell, FoldingCellView>();
         this._setNativeClipToBounds();
     }
@@ -144,14 +140,6 @@ export class FoldingListView extends FoldingListViewBase {
 
     public setHeight(index: number, value: FoldingCellHeight): void {
         this._heights[index] = value;
-    }
-
-    public getIsCellExpandedIn(index: number): boolean {
-        return this._cellExpanded[index];
-    }
-
-    public setIsCellExpanded(index: number, value: boolean): void {
-        this._cellExpanded[index] = value;
     }
 
     public _onFoldedRowHeightPropertyChanged(oldValue: Length, newValue: Length) {
@@ -271,13 +259,15 @@ export class FoldingListView extends FoldingListViewBase {
                 cell.containerViewTNS.nativeViewProtected.removeFromSuperview();
                 cell.containerViewWeakRef = new WeakRef(containerView);
             }
+
             if (!this.detailDataLoader) {
                 this._prepareItem(containerView, index);
             }
-
-            const cachedData = this._getCachedDetailData(index);
-            if (cachedData) {
-                cell._bindContainerView(index, cachedData);
+            else {
+                const cachedData = this._getCachedDetailData(index);
+                if (cachedData) {
+                    cell._bindContainerView(index, cachedData);
+                }
             }
 
             const cellView: FoldingCellView = {
@@ -406,18 +396,6 @@ export class FoldingListView extends FoldingListViewBase {
                 animated,
             );
         }
-    }
-
-    private _checkAndWrapProxyContainers(view: View): View {
-        // Proxy containers should not get treated as layouts.
-        // Wrap them in a real layout as well.
-        if (view instanceof ProxyViewContainer) {
-            const sp = new StackLayout();
-            sp.addChild(view);
-            return sp;
-        }
-
-        return view;
     }
 
     private _layoutCell(cellView: FoldingCellView): FoldingCellHeight {
@@ -602,7 +580,7 @@ class FoldingListViewDelegate extends NSObject implements UITableViewDelegate {
         const owner = this._owner.get();
         const cellHeight = owner.getHeight(indexPath.row);
 
-        return layout.toDeviceIndependentPixels(owner.getIsCellExpandedIn(indexPath.row) ? cellHeight.container : cellHeight.foreground);
+        return layout.toDeviceIndependentPixels(owner._getIsCellExpandedIn(indexPath.row) ? cellHeight.container : cellHeight.foreground);
     }
 
     public tableViewDidSelectRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): void {
@@ -613,7 +591,7 @@ class FoldingListViewDelegate extends NSObject implements UITableViewDelegate {
             return;
         }
 
-        const isExpandedIn = !owner.getIsCellExpandedIn(indexPath.row);
+        const isExpandedIn = !owner._getIsCellExpandedIn(indexPath.row);
         const index = indexPath.row;
 
         if (isExpandedIn && owner.detailDataLoader) {
@@ -640,7 +618,7 @@ class FoldingListViewDelegate extends NSObject implements UITableViewDelegate {
     public tableViewWillDisplayCellForRowAtIndexPath(tableView: UITableView, cell: UITableViewCell, indexPath: NSIndexPath) {
         const foldingCell = cell as FoldingListViewCell;
         const owner = this._owner.get();
-        const isExpandedIn = owner.getIsCellExpandedIn(indexPath.row);
+        const isExpandedIn = owner._getIsCellExpandedIn(indexPath.row);
 
         if (owner && (indexPath.row === owner.items.length - 1)) {
             owner.notify({
@@ -655,7 +633,7 @@ class FoldingListViewDelegate extends NSObject implements UITableViewDelegate {
     private _performCellUnfold(cell: FoldingListViewCell, index: number, isExpanded: boolean) {
         const owner = this._owner.get();
 
-        owner.setIsCellExpanded(index, isExpanded);
+        owner._setIsCellExpandedIn(index, isExpanded);
         cell.unfoldAnimatedCompletion(isExpanded, true, null);
 
         let duration: number = 0;

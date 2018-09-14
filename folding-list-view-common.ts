@@ -17,7 +17,11 @@ import { CoercibleProperty, Property } from "ui/core/properties";
 import { CSSType, Color, CssProperty, EventData, KeyedTemplate, Length, Style, Template, View } from "ui/core/view";
 import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
 import { Label } from "ui/label";
+import { StackLayout } from "ui/layouts/stack-layout";
 import { ItemsSource } from "ui/list-view";
+import { ProxyViewContainer } from "ui/proxy-view-container";
+
+export * from "ui/core/view";
 
 import {
     DetailDataLoaderFunc,
@@ -87,6 +91,7 @@ export abstract class FoldingListViewBase extends View implements FoldingListVie
     private _itemTemplateSelector: TemplateSelectorFunc;
     private _itemTemplateSelectorBindable = new Label();
     private _cachedDetailData = new Array<any>();
+    private _cellExpanded = new Array<boolean>();
 
     public get itemTemplateSelector(): string | TemplateSelectorFunc {
         return this._itemTemplateSelector;
@@ -176,9 +181,32 @@ export abstract class FoldingListViewBase extends View implements FoldingListVie
         this._cachedDetailData[index] = value;
     }
 
-    private _getDataItem(index: number): any {
+    public _getIsCellExpandedIn(index: number): boolean {
+        return this._cellExpanded[index];
+    }
+    public _setIsCellExpandedIn(index: number, value: boolean): void {
+        this._cellExpanded[index] = value;
+    }
+
+    public _getDataItem(index: number): any {
         const thisItems = this.items as ItemsSource;
         return thisItems.getItem ? thisItems.getItem(index) : thisItems[index];
+    }
+
+    public _checkAndWrapProxyContainers(view: View): View {
+        // Proxy containers should not get treated as layouts.
+        // Wrap them in a real layout as well.
+        if (view instanceof ProxyViewContainer) {
+            const sp = new StackLayout();
+            sp.addChild(view);
+            return sp;
+        }
+
+        return view;
+    }
+
+    protected updateEffectiveFoldedRowHeight(): void {
+        foldedRowHeightProperty.coerce(this);
     }
 }
 

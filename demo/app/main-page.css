@@ -1,10 +1,11 @@
 #lv {
     back-view-color: #cccccc;
+    padding: 0 10 0 10;
 }
 
 .folded-cell,
 .expanded-cell {
-    margin: 10; 
+    margin-top: 10; 
     border-radius: 5; 
     border-color: #444444; 
     border-width: 1;
@@ -25,8 +26,10 @@
 .expanded-cell .item-nbr {
     font-weight: bold;
     padding: 5;
+    text-align: center;
 }
 
 .expanded-cell .label {
     padding: 15;
+    font-weight: bold;
 }
