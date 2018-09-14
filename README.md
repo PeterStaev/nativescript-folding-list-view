@@ -4,6 +4,8 @@
 [![npm downloads](https://img.shields.io/npm/dt/nativescript-folding-list-view.svg)](https://www.npmjs.com/package/nativescript-folding-list-view)
 [![npm](https://img.shields.io/npm/v/nativescript-folding-list-view.svg)](https://www.npmjs.com/package/nativescript-folding-list-view)
 
+![NativeScript+Ramotion=❤️](https://raw.githubusercontent.com/PeterStaev/nativescript-folding-list-view/master/media/header.gif)
+
 A NativeScript ListView with foldable cells. Utilizes the wonderfull FoldingCell created by [Ramotion](https://github.com/Ramotion)
 
 ## Screenshot
