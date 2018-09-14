@@ -189,7 +189,6 @@ export class FoldingListView extends FoldingListViewBase {
 
     public onLayout(left: number, top: number, right: number, bottom: number): void {
         super.onLayout(left, top, right, bottom);
-
         this._map.forEach((cellView, listViewCell) => {
             const width = layout.getMeasureSpecSize(this.widthMeasureSpec);
             const cellHeight = this.getHeight(cellView.index);
@@ -422,9 +421,9 @@ export class FoldingListView extends FoldingListViewBase {
 
     private _prepareConstrainedView(view: ConstraintedView) {
         view._constraintTop = PercentLength.toDevicePixels(view.marginTop);
-        view._constraintLeft = PercentLength.toDevicePixels(view.marginLeft);
+        view._constraintLeft = PercentLength.toDevicePixels(view.marginLeft) + this.effectivePaddingLeft;
         view._constraintBottom = PercentLength.toDevicePixels(view.marginBottom);
-        view._constraintRight = PercentLength.toDevicePixels(view.marginRight);
+        view._constraintRight = PercentLength.toDevicePixels(view.marginRight) + this.effectivePaddingRight;
         view.margin = "0";
     }
 }
@@ -518,6 +517,7 @@ class FoldingListViewCell extends FoldingCell {
             null,
             { layer: foregroundView } as any,
         ));
+        // NOTE: We need to add the UITableView insets to the right as otherwise the views get shifted
         NSLayoutConstraint.activateConstraints(NSLayoutConstraint.constraintsWithVisualFormatOptionsMetricsViews(
             `H:|-${layout.toDeviceIndependentPixels(this.foregroundViewTNS._constraintLeft)}-[layer]-${layout.toDeviceIndependentPixels(this.foregroundViewTNS._constraintRight)}-|`,
             0,
@@ -547,6 +547,7 @@ class FoldingListViewCell extends FoldingCell {
         this.containerView = containerView;
 
         this.resetContainerViewHeightContraint(height);
+        // NOTE: We need to add the UITableView insets to the right as otherwise the views get shifted
         NSLayoutConstraint.activateConstraints(NSLayoutConstraint.constraintsWithVisualFormatOptionsMetricsViews(
             `H:|-${layout.toDeviceIndependentPixels(this.containerViewTNS._constraintLeft)}-[layer]-${layout.toDeviceIndependentPixels(this.containerViewTNS._constraintRight)}-|`,
             0,
