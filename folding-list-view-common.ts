@@ -115,8 +115,7 @@ export abstract class FoldingListViewBase extends View implements FoldingListVie
     }
 
     public abstract refresh();
-    public abstract scrollToIndex(index: number);
-    public abstract scrollToIndexAnimated(index: number);
+    public abstract scrollToIndex(index: number, animated?: boolean);
 
     public _getForegroundItemTemplate(index: number): KeyedTemplate {
         let templateKey: string = Constants.DefaultTemplateKey;

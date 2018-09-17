@@ -99,12 +99,26 @@ export class FoldingListView extends FoldingListViewBase {
         });
     }
 
-    public scrollToIndex(index: number) {
-        this._scrollToIndex(index, false);
-    }
+    public scrollToIndex(index: number, animated: boolean = true) {
+        if (!this._ios) {
+            return;
+        }
 
-    public scrollToIndexAnimated(index: number) {
-        this._scrollToIndex(index);
+        const itemsLength = this.items ? this.items.length : 0;
+        if (itemsLength > 0) {
+            if (index < 0) {
+                index = 0;
+            }
+            else if (index >= itemsLength) {
+                index = itemsLength - 1;
+            }
+
+            this._ios.scrollToRowAtIndexPathAtScrollPositionAnimated(
+                NSIndexPath.indexPathForItemInSection(index, 0),
+                UITableViewScrollPosition.Top,
+                animated,
+            );
+        }
     }
 
     public refresh() {
@@ -374,28 +388,6 @@ export class FoldingListView extends FoldingListViewBase {
 
     //     this.refresh();
     // }
-
-    private _scrollToIndex(index: number, animated: boolean = true) {
-        if (!this._ios) {
-            return;
-        }
-
-        const itemsLength = this.items ? this.items.length : 0;
-        if (itemsLength > 0) {
-            if (index < 0) {
-                index = 0;
-            }
-            else if (index >= itemsLength) {
-                index = itemsLength - 1;
-            }
-
-            this._ios.scrollToRowAtIndexPathAtScrollPositionAnimated(
-                NSIndexPath.indexPathForItemInSection(index, 0),
-                UITableViewScrollPosition.Top,
-                animated,
-            );
-        }
-    }
 
     private _layoutCell(cellView: FoldingCellView): FoldingCellHeight {
         if (cellView) {

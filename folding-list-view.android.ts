@@ -173,17 +173,15 @@ export class FoldingListView extends FoldingListViewBase {
         (nativeView.getAdapter() as android.widget.BaseAdapter).notifyDataSetChanged();
     }
 
-    public scrollToIndex(index: number) {
+    public scrollToIndex(index: number, animated: boolean = true) {
         const nativeView = this.nativeViewProtected;
         if (nativeView) {
-            nativeView.setSelection(index);
-        }
-    }
-
-    public scrollToIndexAnimated(index: number) {
-        const nativeView = this.nativeViewProtected;
-        if (nativeView) {
-            nativeView.smoothScrollToPosition(index);
+            if (animated) {
+                nativeView.smoothScrollToPosition(index);
+            }
+            else {
+                nativeView.setSelection(index);
+            }
         }
     }
 

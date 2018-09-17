@@ -28,15 +28,14 @@ export class FoldingListView extends View {
     public foregroundItemTemplate: string | Template;
     public containerItemTemplate: string | Template;
 
-    public android: any /* android.widget.ListView */;
-    public ios: any /* UITableView */;
-
     public itemTemplateSelector: string | TemplateSelectorFunc;
     public detailDataLoader: DetailDataLoaderFunc;
 
+    public android: any /* android.widget.ListView */;
+    public ios: any /* UITableView */;
+
     public refresh();
-    public scrollToIndex(index: number);
-    public scrollToIndexAnimated(index: number);
+    public scrollToIndex(index: number, animated?: boolean);
 
     public on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
     public on(event: "itemLoading", callback: (args: ItemEventData) => void, thisArg?: any);
