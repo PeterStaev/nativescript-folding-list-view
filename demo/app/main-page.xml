@@ -23,11 +23,11 @@
                     </StackLayout>
                 </GridLayout>
             </flv:FoldingListView.foregroundItemTemplate>
+
             <flv:FoldingListView.containerItemTemplate>
                 <StackLayout rows="auto, *, auto" class="expanded-cell">
                     <Label row="0" class="item-nbr" text="{{ 'Item #' + item }}" />
                     <Label row="1" class="label" textWrap="true" text="{{ details }}" />
-                    <!-- <Label row="1" class="label" textWrap="true" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum." /> -->
                     <Button id="btn" row="2" class="btn btn-primary" text="Click Me!" tap="buttonTap" />
                 </StackLayout>
             </flv:FoldingListView.containerItemTemplate>
