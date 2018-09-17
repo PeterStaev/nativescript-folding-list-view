@@ -4,7 +4,7 @@ android:
   components:
     - tools
     - platform-tools
-    - build-tools-26.0.2
+    - build-tools-27.0.3
     - android-23
     - android-25
     - extra-android-m2repository
@@ -89,12 +89,12 @@ matrix:
       language: node_js 
       node_js: "8"
       before_deploy:
-          - cd bin/dist
+        - cd bin/dist
       deploy:
         provider: npm
         email: "peter@tangrasoft.com"
         api_key:
-          secure: "aDwolMad3E8pPs9tI7Wm0zaa2N43KJpCFE+bRknlvBB0YgXxoDAtbts0zModtzaNagJD4lLkLB4mxlC1LASFX533lE7cZ4+vP79tjhvrSnsg6J4obdyPlCDCiLZjarXcOyNyL9yHKNrSQ1XTA1JUJspbTBWG31sTKsx950Bqh2HJW2Zr8ET/Yz/xi/P2LJC1tSXPMN9XzC53COOR5Wr2VIuZxT30tq0p1IC6q+RemwKtwEMx/TojeCDp9kfcPdQBrclRw3Aqs2zmvrs/zrZymIDqR9rMzAYqQMixKwCoURo29B37OUXMzgcgcSWenogUJPqzPRAGvK5IsCAHPqe3A7wrnL5YQfEiapRzFThTLAh4BB5ewOq0OD1YRlrhlqRSNN3Bx99+RGM+uJgtxo4C58WvABxSyuY8uw+Mwl6N/eNUnyWwFt7ulxC/c8yO8OMOB5F8GjcNPcXDa3NC3TrOnRyaQy/3zy+KsYr6SrRBvaqaG6ZuS/D/k/tY1h1RWV02m6ShigzEAi8KIgwC/deIsZwwUc9zqyVqSgwN3uQmnq9W3kdxzMl82VS75E6yAZvz9ezRKzUq/TQWfKHDXpsHAC8K46v5435kHTaOn/8rX/HqzaO4FS5Y+TmRvm/JDP4m6peis5KXHzHv+DgGrF0DNWstUreA2/CbPg0xkgJTYTQ="
+          secure: "uygB69ZcljMFQ4CD+l/zfXZP+cK4kXkhf44BP2U+T4H268m4fO/Y8v+bsCuoqwGV999Dvxf9JRjPUVgqfYJmMPT7zg28snFefrZoYx0nJCZmZsXQHHaSUEffKaYWBRy2bZqrXpthIF484GHt803ucC8omOiyfS0gMvmoGHejUk0XlhmI7K9klkrVbn9MOwf4ZeVK1IhxbTyW8s7A1FcoBPUecqalson/mUPzKC+2MmburFvUrl842yMxQY0GHFfOSico4c1JQ5RbEOnPI+95xFM4Tk8N7wH7SmprjvRd4MWLZu9UyDL8wY+sMSRk8I+MrfVMYQKcLC3mJAgpHtopnrqHAv7v9Q1cVLobKFM76NvIN4JB2dbbvxpNsQRBc6KAvhlMohB6bvpes/4HrAivgM2v9UdUtYET/hZuQ2wAQCVdSyeiMjJ+dtz2EzgkGc5iZnoq33u6RfdP4YGHOzSy+CzkN/W05LPCJFLrR0ABIWFQk00qjmFc8E691DX/1hQKE6ixYeCH6MzwrQOz7lbVgEmLffFhxG6j3os7BaDB+L5+pCFxDC41NWldK3VV5LjbDcd1OvO/+ERat/8kF4nQq6nsbcEtisQOPu3fsK6mVggNXKn2+I+01h5p45grlEM1Au2IlGTX2AgplK7lFKNwDfisNNGruxd4TzBD3LyzTn8="
         skip_cleanup: true
         on:
           branch: release
