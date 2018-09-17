@@ -1,5 +1,6 @@
 platform :ios, '9.0'
-pod 'FoldingCell', '~> 3.1'
+#pod 'FoldingCell', '~> 3.1'
+pod 'FoldingCell', :git => 'https://github.com/PeterStaev/folding-cell.git', :branch => 'fix-overridable-objc-method'
 
 post_install do |installer|
     installer.pods_project.targets.each do |target|

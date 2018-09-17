@@ -475,6 +475,10 @@ class FoldingListViewCell extends FoldingCell {
         NSLayoutConstraint.activateConstraints(this._containerViewHeightConstraints);
     }
 
+    public animationDurationType(itemIndex: number, type: AnimationType): number {
+        return 0.33;
+    }
+
     public _bindContainerView(index: number, dataItem: any) {
         const containerView = this.containerViewTNS;
         const parent = containerView.parent as FoldingListView;
@@ -629,17 +633,9 @@ class FoldingListViewDelegate extends NSObject implements UITableViewDelegate {
         owner._setIsCellExpandedIn(index, isExpanded);
         cell.unfoldAnimatedCompletion(isExpanded, true, null);
 
-        let duration: number = 0;
+        let duration: number = owner.foldsCount * 0.33;
         if (isExpanded) {
-            for (let loop = 0; loop < cell.durationsForCollapsedState.count; loop++) {
-                duration = duration + cell.durationsForCollapsedState.objectAtIndex(loop);
-            }
             duration /= 2;
-        }
-        else {
-            for (let loop = 0; loop < cell.durationsForExpandedState.count; loop++) {
-                duration = duration + cell.durationsForExpandedState.objectAtIndex(loop);
-            }
         }
 
         UIView.animateWithDurationDelayOptionsAnimationsCompletion(
@@ -696,13 +692,6 @@ class FoldingListViewDataSource extends NSObject implements UITableViewDataSourc
             }
 
             cell.itemCount = owner.foldsCount;
-
-            if (cell.durationsForCollapsedState.count < owner.foldsCount) {
-                cell.durationsForCollapsedState = Array(owner.foldsCount).fill(0.33) as any;
-            }
-            if (cell.durationsForExpandedState.count < owner.foldsCount) {
-                cell.durationsForExpandedState = Array(owner.foldsCount).fill(0.33) as any;
-            }
         }
         else {
             cell = FoldingListViewCell.new() as FoldingListViewCell;
