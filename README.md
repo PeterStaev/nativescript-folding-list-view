@@ -106,9 +106,9 @@ You need to add `xmlns:flv="nativescript-folding-list-view"` to your page tag, a
             
             <flv:FoldingListView.containerItemTemplate>
                 <StackLayout rows="auto, *, auto" class="expanded-cell">
-                    <Label row="0" class="item-nbr" text="{{ 'Item #' + item }}" />
-                    <Label row="1" class="label" textWrap="true" text="{{ details }}" />
-                    <Button id="btn" row="2" class="btn btn-primary" text="Click Me!" />
+                    <Label class="item-nbr" text="{{ 'Item #' + item }}" />
+                    <Label class="label" textWrap="true" text="{{ details }}" />
+                    <Button id="btn" class="btn btn-primary" text="Click Me!" />
                 </StackLayout>
             </flv:FoldingListView.containerItemTemplate>
         </flv:FoldingListView>
