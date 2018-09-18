@@ -1,4 +1,3 @@
-platform :ios, '9.0'
 #pod 'FoldingCell', '~> 3.1'
 pod 'FoldingCell', :git => 'https://github.com/PeterStaev/folding-cell.git', :branch => 'fix-overridable-objc-method'
 
