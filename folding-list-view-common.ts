@@ -280,6 +280,7 @@ foldedRowHeightProperty.register(FoldingListViewBase);
 
 export const backViewColorProperty = new CssProperty<Style, Color>({
     name: "backViewColor",
+    defaultValue: new Color("white"),
     cssName: "back-view-color",
     equalityComparer: Color.equals,
     valueConverter: (v) => new Color(v),
