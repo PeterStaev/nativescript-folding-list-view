@@ -577,6 +577,12 @@ class FoldingListViewDelegate extends NSObject implements UITableViewDelegate {
         const owner = this._owner.get();
         const cellHeight = owner.getHeight(indexPath.row);
 
+        // In cases of very big heights it could happen that we do not know the heights, 
+        // ini which case we return the folded row height. 
+        if (!cellHeight) {
+            return layout.toDeviceIndependentPixels(owner._effectiveFoldedRowHeight);
+        }
+        
         return layout.toDeviceIndependentPixels(owner._getIsCellExpandedIn(indexPath.row) ? cellHeight.container : cellHeight.foreground);
     }
 
