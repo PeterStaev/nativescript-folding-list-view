@@ -72,7 +72,7 @@ function initializeItemClickListener(): void {
 
             // If cell is collapsed clear the cached data so it can be loaded again on expand. 
             if (!isExpandedIn) {
-                owner._setCachedDetailData(index, undefined);
+                owner.invalidateChachedDetailData(index);
             }
         }
     }
@@ -344,6 +344,7 @@ function ensureFoldingListViewAdapterClass() {
             let foregroundView: View;
             let containerView: View;
             let cell = convertView as com.ramotion.foldingcell.FoldingCell;
+            const isCellExpandedIn = owner._getIsCellExpandedIn(index);
             if (cell) {
                 foregroundView = owner._realizedForegroundTemplates.get(foregroundTemplate.key).get(cell);
                 if (!foregroundView) {
@@ -413,6 +414,14 @@ function ensureFoldingListViewAdapterClass() {
                 if (cachedData) {
                     containerView.bindingContext = cachedData;
                 }
+                else if (isCellExpandedIn) {
+                    owner._getDetailDataLoaderPromise(index)
+                        .then((result) => {
+                            owner._setCachedDetailData(index, result);
+                            containerView.bindingContext = result;
+                        })
+                        .catch((e) => { console.error("ERROR LOADING DETAILS:", e); });
+                }
             }
 
             // Cache the views for recycling
@@ -432,7 +441,6 @@ function ensureFoldingListViewAdapterClass() {
 
             owner._realizedItems.set(cell, { foreground: foregroundView, container: containerView });
 
-            const isCellExpandedIn = owner._getIsCellExpandedIn(index);
             // HACK: The container view needs to be shown so that all controls are correctly measured and layout. 
             // So we set the cell height to the height of the foreground view so the list does not flicker. 
             // Then we use a timeout so we wait for some minimal time for the view to be rendered before we hide it. 

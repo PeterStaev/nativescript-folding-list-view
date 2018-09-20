@@ -281,6 +281,14 @@ export class FoldingListView extends FoldingListViewBase {
                 if (cachedData) {
                     cell._bindContainerView(index, cachedData);
                 }
+                else if (this._getIsCellExpandedIn(index)) {
+                    this._getDetailDataLoaderPromise(index)
+                        .then((result) => {
+                            this._setCachedDetailData(index, result);
+                            containerView.bindingContext = result;
+                        })
+                        .catch((e) => { console.error("ERROR LOADING DETAILS:", e); });
+                }
             }
 
             const cellView: FoldingCellView = {
@@ -614,7 +622,7 @@ class FoldingListViewDelegate extends NSObject implements UITableViewDelegate {
 
         // If cell is collapsed clear the cached data so it can be loaded again on expand. 
         if (!isExpandedIn) {
-            owner._setCachedDetailData(index, undefined);
+            owner.invalidateChachedDetailData(index);
         }
     }
 

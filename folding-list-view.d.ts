@@ -36,6 +36,7 @@ export class FoldingListView extends View {
 
     public refresh();
     public scrollToIndex(index: number, animated?: boolean);
+    public invalidateChachedDetailData(index: number);
 
     public on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
     public on(event: "itemLoading", callback: (args: ItemEventData) => void, thisArg?: any);
