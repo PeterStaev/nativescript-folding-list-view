@@ -76,6 +76,9 @@ Scrolls the FoldingListView to the item with the given index. This can be either
 * **invalidateChachedDetailData(index: number)**  
 Invalidates the cahced detail data for the given index. This will cause the `detailDataLoader` to be called when the cell at the given indexed is shown or the list is refreshed.  
 
+* **resetExpandedStates()**  
+Resets expanded states for all cells in the list view. Useful when you are reloading the list with completely different data so all cells can start in folded state. 
+
 ## Usage
 You need to add `xmlns:flv="nativescript-folding-list-view"` to your page tag, and then simply use `<flv:FoldingListView/>` in order to add the widget to your page. Use `<flv:FoldingListView.foregroundItemTemplate/>` to specify the template for folded cells and `<flv:FoldingListView.containerItemTemplate/>` to specify the template for unfolded cells:
 

@@ -35,6 +35,7 @@ export class FoldingListView extends View {
     public ios: any /* UITableView */;
 
     public refresh();
+    public resetExpandedStates();
     public scrollToIndex(index: number, animated?: boolean);
     public invalidateChachedDetailData(index: number);
 
