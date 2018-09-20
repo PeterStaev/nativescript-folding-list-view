@@ -432,23 +432,26 @@ function ensureFoldingListViewAdapterClass() {
 
             owner._realizedItems.set(cell, { foreground: foregroundView, container: containerView });
 
+            const isCellExpandedIn = owner._getIsCellExpandedIn(index);
             // HACK: The container view needs to be shown so that all controls are correctly measured and layout. 
-            // So we set the cell height to the ehight of the foreground view so the list does not flicker. 
+            // So we set the cell height to the height of the foreground view so the list does not flicker. 
             // Then we use a timeout so we wait for some minimal time for the view to be rendered before we hide it. 
-            org.nativescript.widgets.ViewHelper.setHeight(
-                cell,
-                PercentLength.toDevicePixels(foregroundView.height)
-                + PercentLength.toDevicePixels(foregroundView.marginTop)
-                + PercentLength.toDevicePixels(foregroundView.borderTopWidth)
-                + PercentLength.toDevicePixels(foregroundView.borderBottomWidth)
-            );
+            if (!isCellExpandedIn) {
+                org.nativescript.widgets.ViewHelper.setHeight(
+                    cell,
+                    PercentLength.toDevicePixels(foregroundView.height)
+                    + PercentLength.toDevicePixels(foregroundView.marginTop)
+                    + PercentLength.toDevicePixels(foregroundView.borderTopWidth)
+                    + PercentLength.toDevicePixels(foregroundView.borderBottomWidth)
+                );
+            }
             setTimeout(() => {
-                cell.getChildAt(0).setVisibility(android.view.View.GONE);
-
-                if (owner._getIsCellExpandedIn(index)) {
+                if (isCellExpandedIn) {
                     cell.unfold(true);
                 }
                 else {
+                    cell.getChildAt(0).setVisibility(android.view.View.GONE);
+
                     cell.fold(true);
                 }
             }, 1);
