@@ -12,7 +12,7 @@ limitations under the License.
 ***************************************************************************** */
 import { Observable } from "data/observable";
 import { ChangedData, ObservableArray } from "data/observable-array";
-import { parse } from "ui/builder";
+import { parse, parseMultipleTemplates } from "ui/builder";
 import { CoercibleProperty, Property } from "ui/core/properties";
 import { CSSType, Color, CssProperty, EventData, KeyedTemplate, Length, Style, Template, View } from "ui/core/view";
 import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
@@ -33,6 +33,11 @@ import {
 export module knownTemplates {
     export const foregroundItemTemplate = "foregroundItemTemplate";
     export const containerItemTemplate = "containerItemTemplate";
+}
+
+export module knownMultiTemplates {
+    export const foregroundItemTemplates = "foregroundItemTemplates";
+    export const containerItemTemplates = "containerItemTemplates";
 }
 
 const enum Constants {
@@ -86,7 +91,7 @@ export abstract class FoldingListViewBase extends View implements FoldingListVie
             return undefined;
         }
     };
-    public _containerTemplatesInternal = new Array<KeyedTemplate>(this._defaultContainerItemTemplate);
+    public _containerItemTemplatesInternal = new Array<KeyedTemplate>(this._defaultContainerItemTemplate);
 
     private _itemTemplateSelector: TemplateSelectorFunc;
     private _itemTemplateSelectorBindable = new Label();
@@ -150,14 +155,14 @@ export abstract class FoldingListViewBase extends View implements FoldingListVie
             templateKey = this._itemTemplateSelector(dataItem, index, this.items);
         }
 
-        for (let loop = 0, length = this._containerTemplatesInternal.length; loop < length; loop++) {
-            if (this._containerTemplatesInternal[loop].key === templateKey) {
-                return this._containerTemplatesInternal[loop];
+        for (let loop = 0, length = this._containerItemTemplatesInternal.length; loop < length; loop++) {
+            if (this._containerItemTemplatesInternal[loop].key === templateKey) {
+                return this._containerItemTemplatesInternal[loop];
             }
         }
 
         // This is the default template
-        return this._containerTemplatesInternal[0];
+        return this._containerItemTemplatesInternal[0];
     }
 
     public _getDetailDataLoaderPromise(index: number): Promise<any> {
@@ -295,3 +300,27 @@ export const backViewColorProperty = new CssProperty<Style, Color>({
     valueConverter: (v) => new Color(v),
 });
 backViewColorProperty.register(Style);
+
+export const foregroundItemTemplatesProperty = new Property<FoldingListViewBase, string | KeyedTemplate[]>({
+    name: "foregroundItemTemplates",
+    valueConverter: (value) => {
+        if (typeof value === "string") {
+            return parseMultipleTemplates(value);
+        }
+
+        return value;
+    }
+});
+foregroundItemTemplatesProperty.register(FoldingListViewBase);
+
+export const containerItemTemplatesProperty = new Property<FoldingListViewBase, string | KeyedTemplate[]>({
+    name: "containerItemTemplates",
+    valueConverter: (value) => {
+        if (typeof value === "string") {
+            return parseMultipleTemplates(value);
+        }
+
+        return value;
+    }
+});
+containerItemTemplatesProperty.register(FoldingListViewBase);

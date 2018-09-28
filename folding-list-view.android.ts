@@ -11,11 +11,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ***************************************************************************** */
 import { Observable } from "data/observable";
-import { PercentLength, View, layout } from "ui/core/view";
+import { KeyedTemplate, PercentLength, View, layout } from "ui/core/view";
 
 import { ItemEventData } from ".";
 import {
     FoldingListViewBase,
+    containerItemTemplatesProperty,
+    foregroundItemTemplatesProperty,
     paddingBottomProperty,
     paddingLeftProperty,   
     paddingRightProperty,
@@ -232,6 +234,32 @@ export class FoldingListView extends FoldingListViewBase {
         this._setPadding({ left: this.effectivePaddingLeft });
     }
 
+    public [foregroundItemTemplatesProperty.getDefault](): KeyedTemplate[] {
+        return null;
+    }
+    public [foregroundItemTemplatesProperty.setNative](value: KeyedTemplate[]) {
+        this._foregroundItemTemplatesInternal = new Array<KeyedTemplate>(this._defaultForegroundItemTemplate);
+        if (value) {
+            this._foregroundItemTemplatesInternal = this._foregroundItemTemplatesInternal.concat(value);
+        }
+
+        this.nativeViewProtected.setAdapter(new FoldingListViewAdapterClass(this));
+        this.refresh();
+    }
+
+    public [containerItemTemplatesProperty.getDefault](): KeyedTemplate[] {
+        return null;
+    }
+    public [containerItemTemplatesProperty.setNative](value: KeyedTemplate[]) {
+        this._containerItemTemplatesInternal = new Array<KeyedTemplate>(this._defaultContainerItemTemplate);
+        if (value) {
+            this._containerItemTemplatesInternal = this._containerItemTemplatesInternal.concat(value);
+        }
+
+        this.nativeViewProtected.setAdapter(new FoldingListViewAdapterClass(this));
+        this.refresh();
+    }
+
     private clearRealizedCells(): void {
         const removeView = (view: View) => {
             if (view.parent) {
@@ -267,19 +295,6 @@ export class FoldingListView extends FoldingListViewBase {
         const newValue = Object.assign(padding, newPadding);
         nativeView.setPadding(newValue.left, newValue.top, newValue.right, newValue.bottom);
     }
-
-    // [itemTemplatesProperty.getDefault](): KeyedTemplate[] {
-    //     return null;
-    // }
-    // [itemTemplatesProperty.setNative](value: KeyedTemplate[]) {
-    //     this._itemTemplatesInternal = new Array<KeyedTemplate>(this._defaultTemplate);
-    //     if (value) {
-    //         this._itemTemplatesInternal = this._itemTemplatesInternal.concat(value);
-    //     }
-
-    //     this.nativeViewProtected.setAdapter(new ListViewAdapterClass(this));
-    //     this.refresh();
-    // }
 }
 
 let FoldingListViewAdapterClass;

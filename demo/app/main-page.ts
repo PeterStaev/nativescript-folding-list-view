@@ -24,6 +24,10 @@ export function detailDataLoader(item: any, index: number) {
     });
 }
 
+export function itemTemplateSelector(item: any, index: number) {
+    return (index % 2 === 0 ? "even" : "odd");
+}
+
 export function loadMoreItems() {
     console.log("LOAD MORE ITEMS");
 }

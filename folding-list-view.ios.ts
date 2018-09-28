@@ -11,11 +11,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ***************************************************************************** */
 import { Observable } from "data/observable";
-import { Color, EventData, Length, PercentLength, View, layout } from "ui/core/view";
+import { Color, EventData, KeyedTemplate, Length, PercentLength, View, layout } from "ui/core/view";
 import * as utils from "utils/utils";
 
 import { ItemEventData } from ".";
-import { FoldingListViewBase, backViewColorProperty } from "./folding-list-view-common";
+import {
+    FoldingListViewBase,
+    backViewColorProperty,
+    containerItemTemplatesProperty,
+    foregroundItemTemplatesProperty,
+} from "./folding-list-view-common";
 
 export * from "./folding-list-view-common";
 
@@ -362,6 +367,37 @@ export class FoldingListView extends FoldingListViewBase {
         this._map.forEach((view, cell) => { cell.backViewColor = actualColor; });
     }
 
+    public [foregroundItemTemplatesProperty.getDefault](): KeyedTemplate[] {
+        return null;
+    }
+    public [foregroundItemTemplatesProperty.setNative](value: KeyedTemplate[]) {
+        this._foregroundItemTemplatesInternal = new Array<KeyedTemplate>(this._defaultForegroundItemTemplate);
+        if (value) {
+            for (const item of value) {
+                this._ios.registerClassForCellReuseIdentifier(FoldingListViewCell.class(), item.key);
+            }
+
+            this._foregroundItemTemplatesInternal = this._foregroundItemTemplatesInternal.concat(value);
+        }
+
+        this.refresh();
+    }
+
+    public [containerItemTemplatesProperty.getDefault](): KeyedTemplate[] {
+        return null;
+    }
+    public [containerItemTemplatesProperty.setNative](value: KeyedTemplate[]) {
+        this._containerItemTemplatesInternal = new Array<KeyedTemplate>(this._defaultContainerItemTemplate);
+        if (value) {
+            for (const item of value) {
+                this._ios.registerClassForCellReuseIdentifier(FoldingListViewCell.class(), item.key);
+            }
+            this._containerItemTemplatesInternal = this._containerItemTemplatesInternal.concat(value);
+        }
+
+        this.refresh();
+    }
+
     public _measureConstraintedChild(view: ConstraintedView, measuredHeight: number) {
         return View.measureChild(
             this,
@@ -381,21 +417,6 @@ export class FoldingListView extends FoldingListViewBase {
             height - view._constraintTop
         );
     }
-
-    // [itemTemplatesProperty.getDefault](): KeyedTemplate[] {
-    //     return null;
-    // }
-    // [itemTemplatesProperty.setNative](value: KeyedTemplate[]) {
-    //     this._itemTemplatesInternal = new Array<KeyedTemplate>(this._defaultTemplate);
-    //     if (value) {
-    //         for (let i = 0, length = value.length; i < length; i++) {
-    //             this._ios.registerClassForCellReuseIdentifier(ListViewCell.class(), value[i].key);
-    //         }
-    //         this._itemTemplatesInternal = this._itemTemplatesInternal.concat(value);
-    //     }
-
-    //     this.refresh();
-    // }
 
     private _layoutCell(cellView: FoldingCellView): FoldingCellHeight {
         if (cellView) {

@@ -63,6 +63,9 @@ Gets or sets the number of unfolds each cell will have. Minimum is 3.
 * **backViewColor** - *Color*  
 Gets or sets the color that will be displayed during the unfolding animation of the cell. 
 
+* **itemTemplateSelector** - *Function | string*  
+This can be either a function that should return a string representing the template key to use, or it can be a string of a property which value will be pulled from the binding context for the current item. Note that the same template key will be used to pull the template for **both** the foreground and container views. 
+
 * **detailDataLoader** - *Function*  
 Gets or sets the a function that will be used for loading the data for the unfolded cell. By default, when this is not specified the widget binds both the folded and unfolded cells the current item. This means that the data for both views should be available in the item. If you set this function it will be called whenever the user taps on an item to unfold it. The function the current `item` and `index` and must return a `Promise` with the data item that should be bound to the unfolded cell. 
 
@@ -121,6 +124,45 @@ You need to add `xmlns:flv="nativescript-folding-list-view"` to your page tag, a
     </GridLayout>
 </Page>
 ```
+### Multiple templates
+Using mutiple templates is dones the same way as you would in the buil-tin `ListView` control - the wdiget provides an `itemTemplateSelector` property that can be either set to a function that returns the correct template key for an item or to a string from which property the value of the key will be pulled. Note that same template key will be used for both the container and foreground views. If you want to have different template only for one type of view, then you can leave the single template for the other one
+```xml
+<flv:FoldingListView id="lv" items="{{ items }}" foldsCount="5" foldedRowHeight="95" 
+    loadMoreItems="loadMoreItems" itemLoading="itemLoading" detailDataLoader="detailDataLoader"
+    itemTemplateSelector="itemTemplateSelector">
+    <flv:FoldingListView.foregroundItemTemplates>
+        <template key="odd">
+            <GridLayout columns="75, *" class="folded-cell">
+                <!-- ... -->
+            </GridLayout>
+        </template>
+        <template key="even">
+            <GridLayout columns="75, *" class="folded-cell even">
+                <!-- ... -->
+            </GridLayout>
+        </template>
+    </flv:FoldingListView.foregroundItemTemplates>
+
+    <flv:FoldingListView.containerItemTemplates>
+        <template key="odd">
+            <StackLayout class="expanded-cell">
+                <!-- ... -->
+            </StackLayout>
+        </template>
+        <template key="even">
+            <StackLayout class="expanded-cell even">
+                <!-- ... -->
+            </StackLayout>
+        </template>
+    </flv:FoldingListView.containerItemTemplates>
+</flv:FoldingListView>
+```
+```ts
+export function itemTemplateSelector(item: any, index: number, items: any) {
+    return (index % 2 === 0 ? "even" : "odd");
+}
+```
+
 ### Unfolded view height requirements
 Note that in order for the widget to function properly the unfolded view height must be more than two times the height of the folded view. In order to ensure this (especially in cases where you load the detail data on demand and do not know exactly the height of the item) it is a good idea to set `min-height` on the wrapping layout for the unfolded cells. 
 

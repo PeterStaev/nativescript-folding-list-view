@@ -19,6 +19,11 @@
     text-align: center;
 }
 
+.folded-cell.even .item-nbr,
+.expanded-cell.even .item-nbr {
+    background-color: blue;
+}
+
 .expanded-cell {
     /* height: 250; */
 }
