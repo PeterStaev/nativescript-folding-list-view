@@ -1,6 +1,6 @@
 {
   "name": "nativescript-folding-list-view",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "A NativeScript ListView widget with foldable cells.",
   "main": "folding-list-view",
   "typings": "folding-list-view.d.ts",
