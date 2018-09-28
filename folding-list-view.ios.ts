@@ -359,6 +359,11 @@ export class FoldingListView extends FoldingListViewBase {
         this._map.delete(cell);
     }
 
+    public isItemAtIndexVisible(index: number): boolean {
+        const indexes: NSIndexPath[] = Array.from(this._ios.indexPathsForVisibleRows);
+        return indexes.some((visIndex) => visIndex.row === index);
+    }
+
     public [backViewColorProperty.getDefault](): UIColor {
         return (FoldingListViewCell.alloc().init()).backViewColor;
     }

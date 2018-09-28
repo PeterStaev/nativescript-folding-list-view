@@ -121,6 +121,7 @@ export abstract class FoldingListViewBase extends View implements FoldingListVie
 
     public abstract refresh();
     public abstract scrollToIndex(index: number, animated?: boolean);
+    public abstract isItemAtIndexVisible(index: number): boolean;
 
     public resetExpandedStates() {
         this._cachedDetailData = new Array<any>();

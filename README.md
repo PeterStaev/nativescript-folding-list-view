@@ -77,7 +77,10 @@ Forces the FoldingListView to reload all its items.
 Scrolls the FoldingListView to the item with the given index. This can be either animated or not. Defaults to animated.
 
 * **invalidateChachedDetailData(index: number)**  
-Invalidates the cahced detail data for the given index. This will cause the `detailDataLoader` to be called when the cell at the given indexed is shown or the list is refreshed.  
+Invalidates the cahced detail data for the given index. This will cause the `detailDataLoader` to be called when the cell at the given indexed is shown or the list is refreshed. 
+
+* **isItemAtIndexVisible(index: number): boolean**  
+Checks if the given index is curently visible in the list. 
 
 * **resetExpandedStates()**  
 Resets expanded states for all cells in the list view. Useful when you are reloading the list with completely different data so all cells can start in folded state. 

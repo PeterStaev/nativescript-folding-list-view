@@ -206,6 +206,14 @@ export class FoldingListView extends FoldingListViewBase {
         });
     }
 
+    public isItemAtIndexVisible(index: number): boolean {
+        const nativeView = this.nativeViewProtected;
+        const start = nativeView.getFirstVisiblePosition();
+        const end = nativeView.getLastVisiblePosition();
+        
+        return (index >= start && index <= end);
+    }
+
     public [paddingTopProperty.getDefault](): number {
         return ((this.nativeView as any) as android.view.View).getPaddingTop();
     }
