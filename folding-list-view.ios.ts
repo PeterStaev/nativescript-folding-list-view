@@ -667,14 +667,14 @@ class FoldingListViewDelegate extends NSObject implements UITableViewDelegate {
         foldingCell.unfoldAnimatedCompletion(isExpandedIn, false, null);
     }
 
-    private _performCellUnfold(cell: FoldingListViewCell, index: number, isExpanded: boolean) {
+    private _performCellUnfold(cell: FoldingListViewCell, index: number, isExpandedIn: boolean) {
         const owner = this._owner.get();
 
-        owner._setIsCellExpandedIn(index, isExpanded);
-        cell.unfoldAnimatedCompletion(isExpanded, true, null);
+        owner._setIsCellExpandedIn(index, isExpandedIn);
+        cell.unfoldAnimatedCompletion(isExpandedIn, true, null);
 
         let duration: number = owner.foldsCount * 0.33;
-        if (isExpanded) {
+        if (isExpandedIn) {
             duration /= 2;
         }
 
