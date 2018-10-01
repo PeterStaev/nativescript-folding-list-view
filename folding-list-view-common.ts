@@ -57,6 +57,7 @@ export abstract class FoldingListViewBase extends View implements FoldingListVie
     public items: any[] | ItemsSource;
     public foldsCount: number;
     public foldedRowHeight: Length;
+    public foldAnimationDuration: number;
 
     public detailDataLoader: DetailDataLoaderFunc;
 
@@ -325,3 +326,13 @@ export const containerItemTemplatesProperty = new Property<FoldingListViewBase, 
     }
 });
 containerItemTemplatesProperty.register(FoldingListViewBase);
+
+export const foldAnimationDurationProperty = new Property<FoldingListViewBase, number>({
+    name: "foldAnimationDuration",
+    defaultValue: 330,
+    valueConverter: (v) => +v,
+    valueChanged: (target, oldValue, newValue) => {
+        target.refresh();
+    },
+});
+foldAnimationDurationProperty.register(FoldingListViewBase);

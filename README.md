@@ -60,6 +60,9 @@ Gets or sets the height for folded cells in the list.
 * **foldsCount** - *number*  
 Gets or sets the number of unfolds each cell will have. Minimum is 3.
 
+* **foldAnimationDuration** - *number*  
+Gets or sets the miliseconds each fold/unfold should take. Default value is 330ms. 
+
 * **backViewColor** - *Color*  
 Gets or sets the color that will be displayed during the unfolding animation of the cell. 
 

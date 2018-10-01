@@ -421,8 +421,7 @@ function ensureFoldingListViewAdapterClass() {
             } as ItemEventData);
 
             // -2 is because here we need the additional folds count after the first one. 
-            // 330 is to match the 0.33 seconds animation duration in iOS
-            cell.initialize(owner.foldsCount * 330, owner.backViewColor.android, owner.foldsCount - 2);
+            cell.initialize(owner.foldsCount * owner.foldAnimationDuration, owner.backViewColor.android, owner.foldsCount - 2);
 
             foregroundView.height = layout.toDeviceIndependentPixels(owner._effectiveFoldedRowHeight);
             foregroundView.marginBottom = 0; // To match iOS implementation

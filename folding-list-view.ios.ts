@@ -510,7 +510,8 @@ class FoldingListViewCell extends FoldingCell {
     }
 
     public animationDurationType(itemIndex: number, type: AnimationType): number {
-        return 0.33;
+        const parent = (this.foregroundViewTNS ? this.foregroundViewTNS.parent as FoldingListView : null);
+        return parent.foldAnimationDuration / 1000;
     }
 
     public _bindContainerView(index: number, dataItem: any) {
@@ -673,7 +674,7 @@ class FoldingListViewDelegate extends NSObject implements UITableViewDelegate {
         owner._setIsCellExpandedIn(index, isExpandedIn);
         cell.unfoldAnimatedCompletion(isExpandedIn, true, null);
 
-        let duration: number = owner.foldsCount * 0.33;
+        let duration: number = owner.foldsCount * (owner.foldAnimationDuration / 1000);
         if (isExpandedIn) {
             duration /= 2;
         }
