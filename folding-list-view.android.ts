@@ -454,10 +454,10 @@ function ensureFoldingListViewAdapterClass() {
             }
             realizedForegroundItemsForTemplateKey.set(cell, foregroundView);
 
-            let realizedContainerItemsForTemplateKey = owner._realizedContainerTemplates.get(foregroundTemplate.key);
+            let realizedContainerItemsForTemplateKey = owner._realizedContainerTemplates.get(containerTemplate.key);
             if (!realizedContainerItemsForTemplateKey) {
                 realizedContainerItemsForTemplateKey = new Map<android.view.View, View>();
-                owner._realizedContainerTemplates.set(foregroundTemplate.key, realizedContainerItemsForTemplateKey);
+                owner._realizedContainerTemplates.set(containerTemplate.key, realizedContainerItemsForTemplateKey);
             }
             realizedContainerItemsForTemplateKey.set(cell, containerView);
 
