@@ -19,7 +19,7 @@ import {
     containerItemTemplatesProperty,
     foregroundItemTemplatesProperty,
     paddingBottomProperty,
-    paddingLeftProperty,   
+    paddingLeftProperty,
     paddingRightProperty,
     paddingTopProperty,
 } from "./folding-list-view-common";
@@ -210,7 +210,7 @@ export class FoldingListView extends FoldingListViewBase {
         const nativeView = this.nativeViewProtected;
         const start = nativeView.getFirstVisiblePosition();
         const end = nativeView.getLastVisiblePosition();
-        
+
         return (index >= start && index <= end);
     }
 
@@ -294,11 +294,11 @@ export class FoldingListView extends FoldingListViewBase {
         const nativeView: android.view.View = this.nativeView as any;
         const padding = {
             top: nativeView.getPaddingTop(),
-            right: nativeView.getPaddingRight(), 
+            right: nativeView.getPaddingRight(),
             bottom: nativeView.getPaddingBottom(),
             left: nativeView.getPaddingLeft()
         };
-        
+
         // tslint:disable-next-line:prefer-object-spread
         const newValue = Object.assign(padding, newPadding);
         nativeView.setPadding(newValue.left, newValue.top, newValue.right, newValue.bottom);
@@ -312,9 +312,19 @@ function ensureFoldingListViewAdapterClass() {
     }
 
     class FoldingListViewAdapter extends android.widget.BaseAdapter {
+        private _templateKeys = new Array<string>();
+
         constructor(public owner: FoldingListView) {
             super();
+
+            for (const foregroundItemTemplate of owner._foregroundItemTemplatesInternal) {
+                for (const containerItemTemplate of owner._containerItemTemplatesInternal) {
+                    this._templateKeys.push(`${foregroundItemTemplate.key}_${containerItemTemplate.key}`);
+                }
+            }
+
             return global.__native(this);
+        
         }
 
         public getCount() {
@@ -337,15 +347,16 @@ function ensureFoldingListViewAdapterClass() {
             return true;
         }
 
-        // public getViewTypeCount() {
-        //     return this.owner._itemTemplatesInternal.length;
-        // }
+        public getViewTypeCount() {
+            return this._templateKeys.length;
+        }
 
-        // public getItemViewType(index: number) {
-        //     let template = this.owner._getItemTemplate(index);
-        //     let itemViewType = this.owner._itemTemplatesInternal.indexOf(template);
-        //     return itemViewType;
-        // }
+        public getItemViewType(index: number) {
+            const foregroundItemTemplate = this.owner._getForegroundItemTemplate(index);
+            const containerItemTemplate = this.owner._getContainerItemTemplate(index);
+            
+            return this._templateKeys.indexOf(`${foregroundItemTemplate.key}_${containerItemTemplate.key}`);
+        }
 
         public getView(index: number, convertView: android.view.View, parent: android.view.ViewGroup): android.view.View {
             if (!this.owner) {
