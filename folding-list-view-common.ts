@@ -14,7 +14,7 @@ import { Observable } from "data/observable";
 import { ChangedData, ObservableArray } from "data/observable-array";
 import { parse, parseMultipleTemplates } from "ui/builder";
 import { CoercibleProperty, Property } from "ui/core/properties";
-import { CSSType, Color, CssProperty, EventData, KeyedTemplate, Length, Style, Template, View } from "ui/core/view";
+import { CSSType, Color, CssProperty, EventData, KeyedTemplate, Length, Style, Template, View, booleanConverter } from "ui/core/view";
 import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
 import { Label } from "ui/label";
 import { StackLayout } from "ui/layouts/stack-layout";
@@ -58,6 +58,7 @@ export abstract class FoldingListViewBase extends View implements FoldingListVie
     public foldsCount: number;
     public foldedRowHeight: Length;
     public foldAnimationDuration: number;
+    public toggleMode: boolean = false;
 
     public detailDataLoader: DetailDataLoaderFunc;
 
@@ -93,11 +94,11 @@ export abstract class FoldingListViewBase extends View implements FoldingListVie
         }
     };
     public _containerItemTemplatesInternal = new Array<KeyedTemplate>(this._defaultContainerItemTemplate);
+    public _cellExpanded = new Array<boolean>();
 
     private _itemTemplateSelector: TemplateSelectorFunc;
     private _itemTemplateSelectorBindable = new Label();
     private _cachedDetailData = new Array<any>();
-    private _cellExpanded = new Array<boolean>();
 
     public get itemTemplateSelector(): string | TemplateSelectorFunc {
         return this._itemTemplateSelector;
@@ -336,3 +337,10 @@ export const foldAnimationDurationProperty = new Property<FoldingListViewBase, n
     },
 });
 foldAnimationDurationProperty.register(FoldingListViewBase);
+
+export const toggleModeProperty = new Property<FoldingListViewBase, boolean>({
+    name: "toggleMode",
+    defaultValue: false,
+    valueConverter: booleanConverter,
+});
+toggleModeProperty.register(FoldingListViewBase);

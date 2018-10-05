@@ -49,6 +49,7 @@ interface FoldingCellHeight {
 
 export class FoldingListView extends FoldingListViewBase {
     public _ios: UITableView;
+    public _map: Map<FoldingListViewCell, FoldingCellView>;
     public widthMeasureSpec: number = 0;
 
     private _dataSource;
@@ -56,7 +57,6 @@ export class FoldingListView extends FoldingListViewBase {
     private _heights: FoldingCellHeight[];
     private _preparingCell: boolean;
     private _isDataDirty: boolean;
-    private _map: Map<FoldingListViewCell, FoldingCellView>;
 
     constructor() {
         super();
@@ -670,6 +670,24 @@ class FoldingListViewDelegate extends NSObject implements UITableViewDelegate {
 
     private _performCellUnfold(cell: FoldingListViewCell, index: number, isExpandedIn: boolean) {
         const owner = this._owner.get();
+
+        if (owner.toggleMode && isExpandedIn) {
+            const expandedIndex = owner._cellExpanded.findIndex((value) => value);
+            let expandedCell: FoldingListViewCell;
+            owner._map.forEach((value, key) => {
+                if (value.index === expandedIndex) {
+                    expandedCell = key;
+                }
+            });
+
+            // cell has been reused so simply mark is not expanded
+            if (!expandedCell) {
+                owner._setIsCellExpandedIn(expandedIndex, false);
+            }
+            else {
+                this._performCellUnfold(expandedCell, expandedIndex, false);
+            }
+        }
 
         owner._setIsCellExpandedIn(index, isExpandedIn);
         cell.unfoldAnimatedCompletion(isExpandedIn, true, null);

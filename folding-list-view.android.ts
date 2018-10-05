@@ -33,6 +33,7 @@ interface ItemClickListener {
 interface FoldingCellView {
     foreground: View;
     container: View;
+    index: number;
 }
 
 let ItemClickListener: ItemClickListener;
@@ -62,20 +63,44 @@ function initializeItemClickListener(): void {
 
                         cellView.container.bindingContext = result;
 
-                        cell.toggle(false);
-                        owner._setIsCellExpandedIn(index, !isExpandedIn);
+                        this._toggleCell(cell, index);
                     })
                     .catch((e) => { console.error("ERROR LOADING DETAILS:", e); });
             }
             else {
-                cell.toggle(false);
-                owner._setIsCellExpandedIn(index, !isExpandedIn);
+                this._toggleCell(cell, index);
             }
 
             // If cell is collapsed clear the cached data so it can be loaded again on expand. 
             if (!isExpandedIn) {
                 owner.invalidateChachedDetailData(index);
             }
+        }
+
+        private _toggleCell(cell: com.ramotion.foldingcell.FoldingCell, index: number) {
+            const owner = this.owner;
+            const isExpandedIn = owner._getIsCellExpandedIn(index);
+
+            if (owner.toggleMode && !isExpandedIn) {
+                const expandedIndex = owner._cellExpanded.findIndex((value) => value);
+                let expandedCell: com.ramotion.foldingcell.FoldingCell;
+                owner._realizedItems.forEach((cellView, currentCell) => {
+                    if (cellView.index === expandedIndex) {
+                        expandedCell = currentCell;
+                    }
+                });
+
+                // cell has been reused so simply mark is not expanded
+                if (!expandedCell) {
+                    owner._setIsCellExpandedIn(expandedIndex, false);
+                }
+                else {
+                    this._toggleCell(expandedCell, expandedIndex);
+                }   
+            }
+
+            cell.toggle(false);
+            owner._setIsCellExpandedIn(index, !isExpandedIn);
         }
     }
     ItemClickListener = ItemClickListenerImpl;
@@ -84,7 +109,7 @@ function initializeItemClickListener(): void {
 export class FoldingListView extends FoldingListViewBase {
     public nativeViewProtected: android.widget.ListView;
 
-    public _realizedItems = new Map<android.view.View, FoldingCellView>();
+    public _realizedItems = new Map<com.ramotion.foldingcell.FoldingCell, FoldingCellView>();
     public _realizedForegroundTemplates = new Map<string, Map<android.view.View, View>>();
     public _realizedContainerTemplates = new Map<string, Map<android.view.View, View>>();
 
@@ -324,7 +349,7 @@ function ensureFoldingListViewAdapterClass() {
             }
 
             return global.__native(this);
-        
+
         }
 
         public getCount() {
@@ -354,7 +379,7 @@ function ensureFoldingListViewAdapterClass() {
         public getItemViewType(index: number) {
             const foregroundItemTemplate = this.owner._getForegroundItemTemplate(index);
             const containerItemTemplate = this.owner._getContainerItemTemplate(index);
-            
+
             return this._templateKeys.indexOf(`${foregroundItemTemplate.key}_${containerItemTemplate.key}`);
         }
 
@@ -472,7 +497,7 @@ function ensureFoldingListViewAdapterClass() {
             }
             realizedContainerItemsForTemplateKey.set(cell, containerView);
 
-            owner._realizedItems.set(cell, { foreground: foregroundView, container: containerView });
+            owner._realizedItems.set(cell, { foreground: foregroundView, container: containerView, index });
 
             // HACK: The container view needs to be shown so that all controls are correctly measured and layout. 
             // So we set the cell height to the height of the foreground view so the list does not flicker. 

@@ -24,6 +24,7 @@ export class FoldingListView extends View {
     public foldsCount: number;
     public backViewColor: Color;
     public foldedRowHeight: Length;
+    public toggleMode: boolean;
 
     public foregroundItemTemplate: string | Template;
     public containerItemTemplate: string | Template;

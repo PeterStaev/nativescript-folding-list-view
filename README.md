@@ -66,6 +66,9 @@ Gets or sets the miliseconds each fold/unfold should take. Default value is 330m
 * **backViewColor** - *Color*  
 Gets or sets the color that will be displayed during the unfolding animation of the cell. 
 
+* **toggleMode** - *boolean*  
+Gets or sets whether the control will work in toggle mode. If set to true only a single cell can be expanded and if the user tries to expand another cell the first one will get folded. 
+
 * **itemTemplateSelector** - *Function | string*  
 This can be either a function that should return a string representing the template key to use, or it can be a string of a property which value will be pulled from the binding context for the current item. Note that the same template key will be used to pull the template for **both** the foreground and container views. 
 

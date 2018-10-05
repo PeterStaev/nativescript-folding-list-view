@@ -8,9 +8,9 @@
     </Page.actionBar>
 
     <GridLayout>
-        <flv:FoldingListView id="lv" items="{{ items }}" foldsCount="5" foldedRowHeight="95" foldAnimationDuration="150"
+        <flv:FoldingListView id="lv" items="{{ items }}" foldsCount="5" foldedRowHeight="95" foldAnimationDuration="330"
             loadMoreItems="loadMoreItems" itemLoading="itemLoading" detailDataLoader="detailDataLoader"
-            itemTemplateSelector="itemTemplateSelector">
+            itemTemplateSelector="itemTemplateSelector" toggleMode="false">
             <flv:FoldingListView.foregroundItemTemplates>
                 <template key="odd">
                     <GridLayout columns="75, *" class="folded-cell">
