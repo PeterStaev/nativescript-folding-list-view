@@ -1,4 +1,5 @@
-﻿# NativeScript Folding List View widget
+**This repo only supports NativeScript pre-6.0. The latest version of the plugin supporting NS 6+ is availble as part of [ProPlugins](https://proplugins.org).**
+ # NativeScript Folding List View widget
 [![Build Status](https://travis-ci.com/PeterStaev/nativescript-folding-list-view.svg?branch=master)](https://travis-ci.com/PeterStaev/nativescript-folding-list-view)
 [![npm downloads](https://img.shields.io/npm/dm/nativescript-folding-list-view.svg)](https://www.npmjs.com/package/nativescript-folding-list-view)
 [![npm downloads](https://img.shields.io/npm/dt/nativescript-folding-list-view.svg)](https://www.npmjs.com/package/nativescript-folding-list-view)
